@@ -1,13 +1,21 @@
-pub enum Piece {
-    Pawn(PieceColor),
-    Knight(PieceColor),
-    Bishop(PieceColor),
-    Rook(PieceColor),
-    Queen(PieceColor),
-    King(PieceColor),
+#[derive(Debug, Clone)]
+pub enum PieceKind {
+    Pawn,
+    Knight,
+    Bishop,
+    Rook,
+    Queen,
+    King,
 }
 
-pub enum PieceColor {
+#[derive(Debug, Clone)]
+pub struct Piece {
+    kind: PieceKind,
+    side: Side,
+}
+
+#[derive(Debug, Clone)]
+pub enum Side {
     White,
     Black,
 }
