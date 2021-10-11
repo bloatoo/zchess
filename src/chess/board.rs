@@ -1,34 +1,24 @@
 use super::Piece;
 
-/*pub enum Square {
-    A1 = 0,
-    B1 = 1,
-    C1 = 2,
-    D1 = 3,
-    E1 = 4,
-    F1 = 5,
-    G1 = 6,
-    H1 = 7,
+#[derive(Debug, Clone, PartialEq)]
+pub struct Square {
+    x: usize,
+    y: usize,
+}
 
-    A2 = 8,
-    B2 = 9,
-    C2 = 10,
-    D2 = 11,
-    E2 = 12,
-    F2 = 13,
-    G2 = 14,
-    H2 = 15,
+impl Square {
+    pub fn new(x: usize, y: usize) -> Self {
+        Self { x, y }
+    }
+}
 
-    A3 = 16,
-    B3 = 17,
-    C3 = 18,
-    D3 = 19,
-    E3 = 20,
-    F3 = 21,
-    G3 = 22,
-    H3 = 23,
-}*/
+#[derive(Debug, Clone)]
+pub struct Move {
+    from: Square,
+    to: Square,
+}
 
+#[derive(Debug, Clone)]
 pub struct Board {
     pieces: Vec<Option<Piece>>,
     en_passant: usize,
@@ -47,6 +37,17 @@ impl Board {
             pieces,
             en_passant: 69,
         }
+    }
+
+    pub fn get_square(square: usize) -> Square {
+        let y = Self::get_row(square);
+        let x = square - y * 8;
+
+        Square { x, y }
+    }
+
+    pub fn get_row(square: usize) -> usize {
+        (square as f32 / 8.0).floor() as usize
     }
 
     pub fn pieces(&self) -> &Vec<Option<Piece>> {
