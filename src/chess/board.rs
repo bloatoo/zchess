@@ -1,4 +1,5 @@
 use super::{Piece, PieceKind, Side};
+use std::cmp::Ordering;
 
 pub trait Square {
     fn x(&self) -> usize;
@@ -38,6 +39,17 @@ pub struct Move<'a> {
     x: isize,
     y: isize,
     constraints: &'a [MoveConstraint],
+}
+
+fn calculate_squares_to_edge(edge: Edge, sq: usize) -> usize {
+    use Edge::*;
+
+    match edge {
+        Right => 7 - sq.x(),
+        Left => sq.x(),
+        Top => 7 - sq.y(),
+        Bottom => sq.y(),
+    }
 }
 
 const PAWN_MOVES: &[Move] = &[
@@ -132,8 +144,22 @@ impl Board {
                 Side::White => {
                     for mv in PAWN_MOVES.iter() {
                         let idx_change = mv.y * 8 + mv.x;
-                        if let None = self.piece_at((sq as isize + idx_change) as usize) {
-                            moves.push((sq as isize + idx_change) as usize);
+
+                        let final_sq = (sq as isize + idx_change) as usize;
+
+                        if let None = self.piece_at(final_sq) {
+                            match mv.x.cmp(&0) {
+                                Ordering::Greater => {
+                                    let to_edge = calculate_squares_to_edge(Edge::Right, sq);
+                                    if to_edge >= mv.x as usize {
+                                        moves.push(final_sq);
+                                    }
+                                }
+                                Ordering::Less => {}
+                                _ => {
+                                    moves.push(final_sq);
+                                }
+                            }
                         }
                     }
                 }
