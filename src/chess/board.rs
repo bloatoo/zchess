@@ -133,6 +133,17 @@ impl Board {
         }
     }
 
+    pub fn make_move(&mut self, source: usize, dest: usize) {
+        let piece = self.piece_at(source).clone().unwrap();
+        self.set_piece(dest, Some(piece));
+        self.set_piece(source, None);
+    }
+
+    fn set_piece(&mut self, dest: usize, piece: Option<Piece>) {
+        let p = self.pieces.get_mut(dest).unwrap();
+        *p = piece;
+    }
+
     pub fn piece_at(&self, square: usize) -> &Option<Piece> {
         if square > 63 {
             return &None;

@@ -52,9 +52,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     stdout.execute(EnterAlternateScreen)?;
     enable_raw_mode()?;
 
-    let mut cursor_pos = (1, 1);
+    let mut cursor_pos = (0, 0);
 
-    let board = Board::default();
+    let mut selected_piece: Option<(usize, usize)> = None;
+
+    let mut board = Board::default();
 
     let tile_str = format!("│{}", " ".repeat(TILE_WIDTH));
 
@@ -153,6 +155,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 Key::Char('j') => cursor_pos.1 -= 1,
                 Key::Char('k') => cursor_pos.1 += 1,
                 Key::Char('l') => cursor_pos.0 += 1,
+
+                Key::Enter => match selected_piece {
+                    Some(p) => match board.piece_at(p.1 * 8 + p.0) {
+                        Some(_) => {
+                            let idx = p.1 * 8 + p.0;
+                            let cursor_idx = cursor_pos.1 * 8 + cursor_pos.0;
+                            board.make_move(idx, cursor_idx.into());
+                            selected_piece = None;
+                        }
+                        _ => (),
+                    },
+                    None => selected_piece = Some((cursor_pos.0 as usize, cursor_pos.1 as usize)),
+                },
                 _ => (),
             }
         }
