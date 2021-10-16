@@ -41,6 +41,16 @@ pub struct Move<'a> {
     constraints: &'a [MoveConstraint],
 }
 
+impl<'a> Move<'a> {
+    pub fn invert_coordinates(&self) -> Self {
+        Self {
+            x: -self.x,
+            y: -self.y,
+            constraints: self.constraints,
+        }
+    }
+}
+
 fn calculate_squares_to_edge(edge: Edge, sq: usize) -> usize {
     use Edge::*;
 
@@ -163,68 +173,75 @@ impl Board {
         let mut moves: Vec<usize> = Vec::new();
 
         match piece.kind() {
-            Pawn => match piece.side() {
-                Side::White => {
-                    'moves: for mv in PAWN_MOVES.iter() {
-                        let idx_change = mv.y * 8 + mv.x;
+            Pawn => {
+                'moves: for mv in PAWN_MOVES.iter() {
+                    let (x, y): (isize, isize) = match piece.side() {
+                        Side::White => (mv.x, mv.y),
+                        Side::Black => {
+                            let mv = mv.invert_coordinates();
+                            (mv.x, mv.y)
+                        }
+                    };
 
-                        let final_sq = (sq as isize + idx_change) as usize;
-                        let mut move_constr = false;
+                    let idx_change = y * 8 + x;
 
-                        for c in mv.constraints {
-                            match c {
-                                MoveConstraint::MaxMoves(a) => {
-                                    if piece.move_count() < &(*a as u32) {
-                                        continue 'moves;
-                                    }
+                    let final_sq = (sq as isize + idx_change) as usize;
+                    let mut move_constr = false;
+
+                    for c in mv.constraints {
+                        match c {
+                            MoveConstraint::MaxMoves(a) => {
+                                if piece.move_count() < &(*a as u32) {
+                                    continue 'moves;
+                                }
+                            }
+
+                            &MoveConstraint::PieceOnTargetSquare => {
+                                if let None = self.piece_at(final_sq) {
+                                    continue 'moves;
                                 }
 
-                                &MoveConstraint::PieceOnTargetSquare => {
-                                    if let None = self.piece_at(final_sq) {
-                                        continue 'moves;
-                                    }
-
-                                    move_constr = true;
-                                }
+                                move_constr = true;
                             }
                         }
+                    }
 
-                        let is_corner = match mv.x.cmp(&0) {
-                            Ordering::Greater => {
-                                let to_edge = calculate_squares_to_edge(Edge::Right, sq);
-                                if to_edge >= mv.x as usize {
-                                    true
-                                } else {
-                                    continue 'moves;
-                                }
-                            }
-                            Ordering::Less => {
-                                let to_edge = calculate_squares_to_edge(Edge::Left, sq);
-
-                                if to_edge as isize >= mv.x {
-                                    true
-                                } else {
-                                    continue 'moves;
-                                }
-                            }
-                            _ => true,
-                        };
-
-                        if is_corner {
-                            if move_constr {
-                                if self.piece_at(final_sq).is_some() {
-                                    moves.push(final_sq);
-                                }
+                    let is_corner = match x.cmp(&0) {
+                        Ordering::Greater => {
+                            let to_edge = calculate_squares_to_edge(Edge::Right, sq);
+                            if to_edge >= x as usize {
+                                true
                             } else {
-                                if self.piece_at(final_sq).is_none() {
+                                continue 'moves;
+                            }
+                        }
+                        Ordering::Less => {
+                            let to_edge = calculate_squares_to_edge(Edge::Left, sq);
+
+                            if to_edge as isize >= x {
+                                true
+                            } else {
+                                continue 'moves;
+                            }
+                        }
+                        _ => true,
+                    };
+
+                    if is_corner {
+                        if move_constr {
+                            if let Some(p) = self.piece_at(final_sq) {
+                                if p.side() != piece.side() {
                                     moves.push(final_sq);
                                 }
+                            }
+                        } else {
+                            if self.piece_at(final_sq).is_none() {
+                                moves.push(final_sq);
                             }
                         }
                     }
                 }
-                _ => (),
-            },
+            }
             Rook => {
                 for mv in ROOK_MOVES.iter() {
                     if mv.x == 0 {
@@ -390,6 +407,6 @@ impl Board {
 
 impl Default for Board {
     fn default() -> Self {
-        Self::from_str("RNBQKBNR/PPPPPPPP/3p4/5R2/8/8/pppppppp/rnbqkbnr")
+        Self::from_str("RNBQKBNR/PPPPPPPP/3p4/5R2/8/4p3/pppppppp/rnbqkbnr")
     }
 }
