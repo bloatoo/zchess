@@ -75,6 +75,29 @@ const PAWN_MOVES: &[Move] = &[
     },
 ];
 
+const ROOK_MOVES: &[Move] = &[
+    Move {
+        x: 8,
+        y: 0,
+        constraints: &[],
+    },
+    Move {
+        x: 0,
+        y: 8,
+        constraints: &[],
+    },
+    /*Move {
+        x: -8,
+        y: 0,
+        constraints: &[],
+    },
+    Move {
+        x: 0,
+        y: -8,
+        constraints: &[],
+    },*/
+];
+
 #[derive(Debug, Clone)]
 pub struct Board {
     pieces: Vec<Option<Piece>>,
@@ -172,6 +195,39 @@ impl Board {
                 }
                 _ => (),
             },
+            Rook => {
+                for mv in ROOK_MOVES.iter() {
+                    if mv.x == 0 {
+                        let top_edge = calculate_squares_to_edge(Edge::Top, sq);
+                        let mut _valid = true;
+                        for i in 1..=top_edge {
+                            let final_sq = sq + i as usize * 8;
+                            moves.push(final_sq);
+                        }
+
+                        let bottom_edge = calculate_squares_to_edge(Edge::Bottom, sq);
+                        let mut _valid = true;
+                        for i in 1..=bottom_edge {
+                            let final_sq = sq - i * 8;
+                            moves.push(final_sq);
+                        }
+                    } else {
+                        let right_edge = calculate_squares_to_edge(Edge::Right, sq);
+                        let mut _valid = true;
+                        for i in 1..=right_edge {
+                            let final_sq = sq + i;
+                            moves.push(final_sq);
+                        }
+
+                        let left_edge = calculate_squares_to_edge(Edge::Left, sq);
+                        let mut _valid = true;
+                        for i in 1..=left_edge {
+                            let final_sq = sq - i;
+                            moves.push(final_sq);
+                        }
+                    }
+                }
+            }
             _ => (),
         };
 
@@ -252,6 +308,6 @@ impl Board {
 
 impl Default for Board {
     fn default() -> Self {
-        Self::from_str("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr")
+        Self::from_str("RNBQKBNR/PPPPPPPP/8/5R2/8/8/pppppppp/rnbqkbnr")
     }
 }
