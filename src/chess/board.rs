@@ -155,7 +155,14 @@ impl Board {
                                         moves.push(final_sq);
                                     }
                                 }
-                                Ordering::Less => {}
+                                Ordering::Less => {
+                                    //let to_edge = calculate_squares_to_edge(Edge::Left, sq);
+
+                                    /*if to_edge as isize >= mv.x {
+                                        moves.push(final_sq);
+                                    }*/
+                                    moves.push(final_sq);
+                                }
                                 _ => {
                                     moves.push(final_sq);
                                 }

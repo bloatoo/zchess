@@ -29,7 +29,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let board = Board::default();
 
-    let test_moves = board.generate_moves(8, &board.piece_at(8).as_ref().unwrap());
+    let idx = (cursor_pos.1 * 8 + cursor_pos.0) as usize;
+    let test_moves = board.generate_moves(idx, &board.piece_at(idx).as_ref().unwrap());
 
     let tile_str = format!("│{}", " ".repeat(TILE_WIDTH));
 
