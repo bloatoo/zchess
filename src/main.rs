@@ -56,13 +56,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let board = Board::default();
 
-    let idx = (cursor_pos.1 * 8 + cursor_pos.0) as usize;
-
     let tile_str = format!("│{}", " ".repeat(TILE_WIDTH));
 
     loop {
         let size = terminal::size()?;
         let center = size.0 / 2 - TILE_WIDTH as u16 * 4 - 2;
+
+        let idx = (cursor_pos.1 * 8 + cursor_pos.0) as usize;
 
         // print top vertical line
         queue!(
@@ -149,6 +149,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if let Ok(Event::Input(k)) = events.next() {
             match k {
                 Key::Char('q') => break,
+                Key::Char('h') => cursor_pos.0 -= 1,
+                Key::Char('j') => cursor_pos.1 -= 1,
+                Key::Char('k') => cursor_pos.1 += 1,
+                Key::Char('l') => cursor_pos.0 += 1,
                 _ => (),
             }
         }

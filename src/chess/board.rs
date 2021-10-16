@@ -13,7 +13,7 @@ impl Square for usize {
     }
 
     fn y(&self) -> usize {
-        (*self as f32 / 8.0).ceil() as usize
+        (*self as f32 / 8.0).floor() as usize
     }
 
     fn pos(&self) -> (usize, usize) {
