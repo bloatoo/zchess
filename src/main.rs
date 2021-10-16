@@ -1,4 +1,3 @@
-#[allow(overflow)]
 use chess::{
     chess::{Board, Square},
     ui::event::*,
