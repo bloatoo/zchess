@@ -1,5 +1,7 @@
 pub mod board;
-pub use board::{Board, Square};
+pub use board::{Board, Move, MoveConstraint, Square};
 
 pub mod piece;
 pub use piece::{Piece, PieceKind, Side};
+
+pub mod moves;

@@ -1,5 +1,7 @@
 use super::{Piece, PieceKind, Side};
-use std::cmp::Ordering;
+
+use crate::chess::moves::pawn::generate_pawn_moves;
+use crate::chess::moves::rook::generate_rook_moves;
 
 pub trait Square {
     fn x(&self) -> usize;
@@ -36,9 +38,9 @@ pub enum Edge {
 }
 
 pub struct Move<'a> {
-    x: isize,
-    y: isize,
-    constraints: &'a [MoveConstraint],
+    pub x: isize,
+    pub y: isize,
+    pub constraints: &'a [MoveConstraint],
 }
 
 impl<'a> Move<'a> {
@@ -61,52 +63,6 @@ fn calculate_squares_to_edge(edge: Edge, sq: usize) -> usize {
         Bottom => sq.y(),
     }
 }
-
-const PAWN_MOVES: &[Move] = &[
-    Move {
-        x: 0,
-        y: 2,
-        constraints: &[MoveConstraint::MaxMoves(0)],
-    },
-    Move {
-        x: 0,
-        y: 1,
-        constraints: &[],
-    },
-    Move {
-        x: 1,
-        y: 1,
-        constraints: &[MoveConstraint::PieceOnTargetSquare],
-    },
-    Move {
-        x: -1,
-        y: 1,
-        constraints: &[MoveConstraint::PieceOnTargetSquare],
-    },
-];
-
-const ROOK_MOVES: &[Move] = &[
-    Move {
-        x: 8,
-        y: 0,
-        constraints: &[],
-    },
-    Move {
-        x: 0,
-        y: 8,
-        constraints: &[],
-    },
-    /*Move {
-        x: -8,
-        y: 0,
-        constraints: &[],
-    },
-    Move {
-        x: 0,
-        y: -8,
-        constraints: &[],
-    },*/
-];
 
 #[derive(Debug, Clone)]
 pub struct Board {
@@ -170,222 +126,11 @@ impl Board {
     pub fn generate_moves(&self, sq: usize, piece: &Piece) -> Vec<usize> {
         use PieceKind::*;
 
-        let mut moves: Vec<usize> = Vec::new();
-
         match piece.kind() {
-            Pawn => {
-                'moves: for mv in PAWN_MOVES.iter() {
-                    let (x, y): (isize, isize) = match piece.side() {
-                        Side::White => (mv.x, mv.y),
-                        Side::Black => {
-                            let mv = mv.invert_coordinates();
-                            (mv.x, mv.y)
-                        }
-                    };
-
-                    let idx_change = y * 8 + x;
-
-                    let final_sq = (sq as isize + idx_change) as usize;
-                    let mut move_constr = false;
-
-                    for c in mv.constraints {
-                        match c {
-                            MoveConstraint::MaxMoves(a) => {
-                                if piece.move_count() < &(*a as u32) {
-                                    continue 'moves;
-                                }
-                            }
-
-                            &MoveConstraint::PieceOnTargetSquare => {
-                                if let None = self.piece_at(final_sq) {
-                                    continue 'moves;
-                                }
-
-                                move_constr = true;
-                            }
-                        }
-                    }
-
-                    let is_corner = match x.cmp(&0) {
-                        Ordering::Greater => {
-                            let to_edge = calculate_squares_to_edge(Edge::Right, sq);
-                            if to_edge >= x as usize {
-                                true
-                            } else {
-                                continue 'moves;
-                            }
-                        }
-                        Ordering::Less => {
-                            let to_edge = calculate_squares_to_edge(Edge::Left, sq);
-
-                            if to_edge as isize >= x {
-                                true
-                            } else {
-                                continue 'moves;
-                            }
-                        }
-                        _ => true,
-                    };
-
-                    if is_corner {
-                        if move_constr {
-                            if let Some(p) = self.piece_at(final_sq) {
-                                if p.side() != piece.side() {
-                                    moves.push(final_sq);
-                                }
-                            }
-                        } else {
-                            if self.piece_at(final_sq).is_none() {
-                                moves.push(final_sq);
-                            }
-                        }
-                    }
-                }
-            }
-            Rook => {
-                for mv in ROOK_MOVES.iter() {
-                    if mv.x == 0 {
-                        let top_edge = calculate_squares_to_edge(Edge::Top, sq);
-                        let mut valid = true;
-
-                        for i in 1..=top_edge {
-                            if !valid {
-                                continue;
-                            }
-                            let final_sq = sq + i as usize * 8;
-
-                            match self.piece_at(final_sq) {
-                                Some(p) => {
-                                    if p.side() != piece.side() {
-                                        moves.push(final_sq);
-                                    }
-                                    valid = false;
-                                }
-                                None => moves.push(final_sq),
-                            };
-                        }
-
-                        let bottom_edge = calculate_squares_to_edge(Edge::Bottom, sq);
-                        let mut valid = true;
-
-                        for i in 1..=bottom_edge {
-                            if !valid {
-                                continue;
-                            }
-
-                            let final_sq = sq - i * 8;
-                            match self.piece_at(final_sq) {
-                                Some(p) => {
-                                    if p.side() != piece.side() {
-                                        moves.push(final_sq);
-                                    }
-                                    valid = false;
-                                }
-                                None => moves.push(final_sq),
-                            }
-                        }
-                    } else {
-                        let right_edge = calculate_squares_to_edge(Edge::Right, sq);
-                        let mut valid = true;
-                        for i in 1..=right_edge {
-                            if !valid {
-                                continue;
-                            }
-
-                            let final_sq = sq + i;
-
-                            match self.piece_at(final_sq) {
-                                Some(p) => {
-                                    if p.side() != piece.side() {
-                                        moves.push(final_sq);
-                                    }
-                                    valid = false;
-                                }
-                                None => moves.push(final_sq),
-                            }
-                        }
-
-                        let left_edge = calculate_squares_to_edge(Edge::Left, sq);
-                        let mut _valid = true;
-                        for i in 1..=left_edge {
-                            if !valid {
-                                continue;
-                            }
-
-                            let final_sq = sq - i;
-
-                            match self.piece_at(final_sq) {
-                                Some(p) => {
-                                    if p.side() != piece.side() {
-                                        moves.push(final_sq);
-                                    }
-                                    valid = false;
-                                }
-                                None => moves.push(final_sq),
-                            }
-                        }
-                    }
-                }
-            }
-            _ => (),
-        };
-
-        /*match piece.kind() {
-            Pawn => match piece.side() {
-                Side::White => {
-                    let upper = sq + 8;
-
-                    let (left, right) = (upper - 1, upper + 1);
-
-                    if let Some(_) = self.piece_at(right) {
-                        moves.push(right);
-                    }
-
-                    if sq.y() == 1 {
-                        let sq = sq + 8;
-                        if let None = self.piece_at(sq) {
-                            moves.push(sq);
-
-                            let other = sq + 8;
-                            if let None = self.piece_at(other) {
-                                moves.push(other);
-                            }
-                        }
-                    } else {
-                        if let None = self.piece_at(sq + 8) {
-                            moves.push(sq + 8);
-                        }
-                    }
-                }
-
-                Side::Black => {
-                    if sq.y() == 6 {
-                        let mut valid = true;
-
-                        for mv in [sq - 8, sq - 16] {
-                            if !valid {
-                                continue;
-                            }
-                            if let Some(_) = self.piece_at(mv) {
-                                valid = false;
-                                continue;
-                            } else {
-                                moves.push(mv);
-                            }
-                        }
-                    } else {
-                        if let None = self.piece_at(sq - 8) {
-                            moves.push(sq - 8);
-                        }
-                    }
-
-                    let upper = sq - 8;
-                }
-            },
-            _ => (),
-        }*/
-
-        moves
+            Pawn => generate_pawn_moves(&self, sq, piece),
+            Rook => generate_rook_moves(&self, sq, piece),
+            _ => vec![],
+        }
     }
 
     pub fn piece_at(&self, square: usize) -> &Option<Piece> {
