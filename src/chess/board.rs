@@ -179,12 +179,11 @@ impl Board {
                                     }
                                 }
                                 Ordering::Less => {
-                                    //let to_edge = calculate_squares_to_edge(Edge::Left, sq);
+                                    let to_edge = calculate_squares_to_edge(Edge::Left, sq);
 
-                                    /*if to_edge as isize >= mv.x {
+                                    if to_edge as isize >= mv.x {
                                         moves.push(final_sq);
-                                    }*/
-                                    moves.push(final_sq);
+                                    }
                                 }
                                 _ => {
                                     moves.push(final_sq);
@@ -199,31 +198,83 @@ impl Board {
                 for mv in ROOK_MOVES.iter() {
                     if mv.x == 0 {
                         let top_edge = calculate_squares_to_edge(Edge::Top, sq);
-                        let mut _valid = true;
+                        let mut valid = true;
+
                         for i in 1..=top_edge {
+                            if !valid {
+                                continue;
+                            }
                             let final_sq = sq + i as usize * 8;
-                            moves.push(final_sq);
+
+                            match self.piece_at(final_sq) {
+                                Some(p) => {
+                                    if p.side() != piece.side() {
+                                        moves.push(final_sq);
+                                    }
+                                    valid = false;
+                                }
+                                None => moves.push(final_sq),
+                            };
                         }
 
                         let bottom_edge = calculate_squares_to_edge(Edge::Bottom, sq);
-                        let mut _valid = true;
+                        let mut valid = true;
+
                         for i in 1..=bottom_edge {
+                            if !valid {
+                                continue;
+                            }
+
                             let final_sq = sq - i * 8;
-                            moves.push(final_sq);
+                            match self.piece_at(final_sq) {
+                                Some(p) => {
+                                    if p.side() != piece.side() {
+                                        moves.push(final_sq);
+                                    }
+                                    valid = false;
+                                }
+                                None => moves.push(final_sq),
+                            }
                         }
                     } else {
                         let right_edge = calculate_squares_to_edge(Edge::Right, sq);
-                        let mut _valid = true;
+                        let mut valid = true;
                         for i in 1..=right_edge {
+                            if !valid {
+                                continue;
+                            }
+
                             let final_sq = sq + i;
-                            moves.push(final_sq);
+
+                            match self.piece_at(final_sq) {
+                                Some(p) => {
+                                    if p.side() != piece.side() {
+                                        moves.push(final_sq);
+                                    }
+                                    valid = false;
+                                }
+                                None => moves.push(final_sq),
+                            }
                         }
 
                         let left_edge = calculate_squares_to_edge(Edge::Left, sq);
                         let mut _valid = true;
                         for i in 1..=left_edge {
+                            if !valid {
+                                continue;
+                            }
+
                             let final_sq = sq - i;
-                            moves.push(final_sq);
+
+                            match self.piece_at(final_sq) {
+                                Some(p) => {
+                                    if p.side() != piece.side() {
+                                        moves.push(final_sq);
+                                    }
+                                    valid = false;
+                                }
+                                None => moves.push(final_sq),
+                            }
                         }
                     }
                 }
