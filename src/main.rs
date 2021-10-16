@@ -1,3 +1,4 @@
+#[allow(overflow)]
 use chess::{
     chess::{Board, Square},
     ui::event::*,
@@ -7,10 +8,10 @@ const TILE_WIDTH: usize = 8;
 const TILE_HEIGHT: usize = 4;
 const H_LINE: &str = "─";
 
-use std::io::Write;
+use std::{io::Write, panic::PanicInfo};
 
 use crossterm::{
-    cursor, queue,
+    cursor, execute, queue,
     style::{Color, Print, Stylize},
     terminal::{
         self, disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen,
@@ -19,18 +20,44 @@ use crossterm::{
     ExecutableCommand,
 };
 
+fn panic_hook(info: &PanicInfo<'_>) {
+    let location = info.location().unwrap();
+
+    let message = match info.payload().downcast_ref::<&'static str>() {
+        Some(msg) => *msg,
+        None => match info.payload().downcast_ref::<String>() {
+            Some(s) => &s[..],
+            None => "Box<Any>",
+        },
+    };
+
+    disable_raw_mode().unwrap();
+
+    execute!(
+        std::io::stdout(),
+        LeaveAlternateScreen,
+        Print(format!(
+            "thread <unnamed> panicked at '{}', {}\n",
+            message, location
+        )),
+    )
+    .unwrap();
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    std::panic::set_hook(Box::new(|info| panic_hook(info)));
+
     let events = Events::new(1024);
+
     let mut stdout = std::io::stdout();
     stdout.execute(EnterAlternateScreen)?;
     enable_raw_mode()?;
 
-    let mut cursor_pos = (0, 1);
+    let mut cursor_pos = (1, 1);
 
     let board = Board::default();
 
     let idx = (cursor_pos.1 * 8 + cursor_pos.0) as usize;
-    let test_moves = board.generate_moves(idx, &board.piece_at(idx).as_ref().unwrap());
 
     let tile_str = format!("│{}", " ".repeat(TILE_WIDTH));
 
@@ -90,8 +117,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         true => format!("{}", "*".bold()),
                     };
                 }
-
-                let idx = 8;
 
                 if let Some(ref p) = board.piece_at(idx) {
                     if board.generate_moves(idx, p).contains(&(i * 8 + j).into()) {

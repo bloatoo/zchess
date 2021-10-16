@@ -19,7 +19,17 @@ mod tests {
 
         let moves = board.generate_moves(8, &piece);
 
-        assert_eq!(vec![16, 24], moves);
+        assert_eq!(vec![16, 24, 17], moves);
+    }
+
+    #[test]
+    fn advanced_moves() {
+        let board = Board::default();
+        let piece = board.piece_at(9).as_ref().unwrap();
+
+        let moves = board.generate_moves(9, &piece);
+
+        assert_eq!(vec![17, 16, 18, 25], moves);
     }
 
     #[test]
