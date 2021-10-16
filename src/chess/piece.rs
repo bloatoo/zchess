@@ -38,6 +38,10 @@ impl Piece {
         &self.side
     }
 
+    pub fn move_count(&self) -> &u32 {
+        &self.move_count
+    }
+
     pub fn render(&self, tile_width: usize) -> &str {
         use PieceKind::*;
 

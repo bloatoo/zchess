@@ -165,27 +165,58 @@ impl Board {
         match piece.kind() {
             Pawn => match piece.side() {
                 Side::White => {
-                    for mv in PAWN_MOVES.iter() {
+                    'moves: for mv in PAWN_MOVES.iter() {
                         let idx_change = mv.y * 8 + mv.x;
 
                         let final_sq = (sq as isize + idx_change) as usize;
+                        let mut move_constr = false;
 
-                        if let None = self.piece_at(final_sq) {
-                            match mv.x.cmp(&0) {
-                                Ordering::Greater => {
-                                    let to_edge = calculate_squares_to_edge(Edge::Right, sq);
-                                    if to_edge >= mv.x as usize {
-                                        moves.push(final_sq);
+                        for c in mv.constraints {
+                            match c {
+                                MoveConstraint::MaxMoves(a) => {
+                                    if piece.move_count() < &(*a as u32) {
+                                        continue 'moves;
                                     }
                                 }
-                                Ordering::Less => {
-                                    let to_edge = calculate_squares_to_edge(Edge::Left, sq);
 
-                                    if to_edge as isize >= mv.x {
-                                        moves.push(final_sq);
+                                &MoveConstraint::PieceOnTargetSquare => {
+                                    if let None = self.piece_at(final_sq) {
+                                        continue 'moves;
                                     }
+
+                                    move_constr = true;
                                 }
-                                _ => {
+                            }
+                        }
+
+                        let is_corner = match mv.x.cmp(&0) {
+                            Ordering::Greater => {
+                                let to_edge = calculate_squares_to_edge(Edge::Right, sq);
+                                if to_edge >= mv.x as usize {
+                                    true
+                                } else {
+                                    continue 'moves;
+                                }
+                            }
+                            Ordering::Less => {
+                                let to_edge = calculate_squares_to_edge(Edge::Left, sq);
+
+                                if to_edge as isize >= mv.x {
+                                    true
+                                } else {
+                                    continue 'moves;
+                                }
+                            }
+                            _ => true,
+                        };
+
+                        if is_corner {
+                            if move_constr {
+                                if self.piece_at(final_sq).is_some() {
+                                    moves.push(final_sq);
+                                }
+                            } else {
+                                if self.piece_at(final_sq).is_none() {
                                     moves.push(final_sq);
                                 }
                             }
@@ -359,6 +390,6 @@ impl Board {
 
 impl Default for Board {
     fn default() -> Self {
-        Self::from_str("RNBQKBNR/PPPPPPPP/8/5R2/8/8/pppppppp/rnbqkbnr")
+        Self::from_str("RNBQKBNR/PPPPPPPP/3p4/5R2/8/8/pppppppp/rnbqkbnr")
     }
 }
