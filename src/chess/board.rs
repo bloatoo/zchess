@@ -20,9 +20,18 @@ impl Square for usize {
     }
 }
 
+#[derive(Debug, Clone)]
 pub enum MoveConstraint {
     MaxMoves(usize),
     PieceOnTargetSquare,
+}
+
+#[derive(Debug, Clone)]
+pub enum Edge {
+    Left,
+    Right,
+    Top,
+    Bottom,
 }
 
 pub struct Move<'a> {
@@ -44,6 +53,11 @@ const PAWN_MOVES: &[Move] = &[
     },
     Move {
         x: 1,
+        y: 1,
+        constraints: &[MoveConstraint::PieceOnTargetSquare],
+    },
+    Move {
+        x: -1,
         y: 1,
         constraints: &[MoveConstraint::PieceOnTargetSquare],
     },
@@ -116,6 +130,21 @@ impl Board {
         match piece.kind() {
             Pawn => match piece.side() {
                 Side::White => {
+                    for mv in PAWN_MOVES.iter() {
+                        let idx_change = mv.y * 8 + mv.x;
+                        if let None = self.piece_at((sq as isize + idx_change) as usize) {
+                            moves.push((sq as isize + idx_change) as usize);
+                        }
+                    }
+                }
+                _ => (),
+            },
+            _ => (),
+        };
+
+        /*match piece.kind() {
+            Pawn => match piece.side() {
+                Side::White => {
                     let upper = sq + 8;
 
                     let (left, right) = (upper - 1, upper + 1);
@@ -166,7 +195,7 @@ impl Board {
                 }
             },
             _ => (),
-        }
+        }*/
 
         moves
     }
