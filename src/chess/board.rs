@@ -1,61 +1,31 @@
 use super::{Piece, PieceKind, Side};
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct Square {
-    x: usize,
-    y: usize,
+pub trait Square {
+    fn x(&self) -> usize;
+    fn y(&self) -> usize;
+    fn pos(&self) -> (usize, usize);
 }
 
-impl Square {
-    pub fn new(x: usize, y: usize) -> Self {
-        Self { x, y }
+impl Square for usize {
+    fn x(&self) -> usize {
+        self - self.y() * 8
     }
 
-    pub fn set_x(&mut self, x: usize) {
-        if x < 8 {
-            self.x = x;
-        }
+    fn y(&self) -> usize {
+        (*self as f32 / 8.0).ceil() as usize
     }
 
-    pub fn set_xy(&mut self, x: usize, y: usize) {
-        if x < 8 {
-            self.x = x;
-        }
-
-        if y < 8 {
-            self.y = y;
-        }
-    }
-
-    pub fn to_idx(&self) -> usize {
-        self.y * 8 + self.x
-    }
-
-    pub fn inc_x(&self) -> Self {
-        Self {
-            x: self.x + 1,
-            y: self.y,
-        }
-    }
-
-    pub fn inc_y(&self) -> Self {
-        Self {
-            y: self.y + 1,
-            x: self.x,
-        }
+    fn pos(&self) -> (usize, usize) {
+        (self.x(), self.y())
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct Move {
-    from: Square,
-    to: Square,
-}
+type Move = isize;
 
 #[derive(Debug, Clone)]
 pub struct Board {
     pieces: Vec<Option<Piece>>,
-    en_passant: usize,
+    en_passant: Option<usize>,
 }
 
 impl Board {
@@ -69,12 +39,11 @@ impl Board {
 
         Self {
             pieces,
-            en_passant: 69,
+            en_passant: None,
         }
     }
 
     pub fn from_str(fen: &str) -> Self {
-        let mut idx = 0;
         let mut pieces: Vec<Option<Piece>> = vec![];
 
         for row in fen.split("/") {
@@ -103,18 +72,16 @@ impl Board {
                         pieces.push(None);
                     }
                 }
-
-                idx += 1;
             }
         }
 
         Self {
             pieces,
-            en_passant: 69,
+            en_passant: None,
         }
     }
 
-    pub fn generate_moves(&self, sq: &Square, piece: &Piece) -> Vec<usize> {
+    pub fn generate_moves(&self, sq: usize, piece: &Piece) -> Vec<usize> {
         use PieceKind::*;
 
         let mut moves: Vec<usize> = Vec::new();
@@ -122,12 +89,25 @@ impl Board {
         match piece.kind() {
             Pawn => match piece.side() {
                 Side::White => {
-                    if sq.y == 1 {
-                        let sq = sq.inc_y();
-                        if let None = self.piece_at(sq.to_idx()) {
-                            moves.push(sq.to_idx());
-                            moves.push(sq.inc_y().to_idx());
+                    let upper = sq + 8;
+
+                    let (left, right) = (upper - 1, upper + 1);
+
+                    if let Some(_) = self.piece_at(right) {
+                        moves.push(right);
+                    }
+
+                    if sq.y() == 1 {
+                        let sq = sq + 8;
+                        if let None = self.piece_at(sq) {
+                            moves.push(sq);
+
+                            let other = sq + 8;
+                            if let None = self.piece_at(other) {
+                                moves.push(other);
+                            }
                         }
+                    } else {
                     }
                 }
                 Side::Black => {}
@@ -136,13 +116,6 @@ impl Board {
         }
 
         moves
-    }
-
-    pub fn get_square(&self, square: usize) -> Square {
-        let y = Self::get_row(square);
-        let x = square - y * 8;
-
-        Square { x, y }
     }
 
     pub fn piece_at(&self, square: usize) -> &Option<Piece> {

@@ -3,13 +3,17 @@ use chess::{
     ui::event::*,
 };
 
+const TILE_WIDTH: usize = 8;
+const TILE_HEIGHT: usize = 4;
+const H_LINE: &str = "─";
+
 use std::io::Write;
 
 use crossterm::{
     cursor, queue,
-    style::Print,
+    style::{Color, Print, Stylize},
     terminal::{
-        disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen,
+        self, disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen,
         LeaveAlternateScreen,
     },
     ExecutableCommand,
@@ -21,31 +25,101 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     stdout.execute(EnterAlternateScreen)?;
     enable_raw_mode()?;
 
+    let mut cursor_pos = (0, 1);
+
     let board = Board::default();
 
-    let sq = Square::new(0, 1);
-    let test_moves = board.generate_moves(&sq, &board.piece_at(sq.to_idx()).as_ref().unwrap());
+    let test_moves = board.generate_moves(8, &board.piece_at(8).as_ref().unwrap());
+
+    let tile_str = format!("│{}", " ".repeat(TILE_WIDTH));
 
     loop {
-        queue!(stdout, Clear(ClearType::All), cursor::MoveTo(0, 7))?;
+        let size = terminal::size()?;
+        let center = size.0 / 2 - TILE_WIDTH as u16 * 4 - 2;
 
-        for (ref idx, ref piece) in board.pieces().iter().enumerate() {
-            if idx % 8 == 0 {
-                stdout.execute(cursor::MoveToPreviousLine(1)).unwrap();
+        // print top vertical line
+        queue!(
+            stdout,
+            Clear(ClearType::All),
+            cursor::MoveTo(center - 1, 0),
+            Print(&format!("{}", H_LINE.repeat(TILE_WIDTH * 8 + 8 + 1))),
+        )?;
+
+        // print
+        for _ in 0..8 {
+            // print tile's vertical lines
+            for _ in 0..TILE_HEIGHT {
+                queue!(
+                    stdout,
+                    cursor::MoveToNextLine(1),
+                    cursor::MoveToColumn(center),
+                    Print(&format!("{}", tile_str.repeat(9))),
+                )?;
             }
 
-            if let Some(_) = test_moves.iter().find(|x| x == &idx) {
-                stdout.execute(Print("* ")).unwrap();
-                continue;
-            }
-
-            stdout
-                .execute(match piece {
-                    Some(p) => Print(format!("{} ", p.as_ref())),
-                    None => Print("e ".into()),
-                })
-                .unwrap();
+            // print horizontal line
+            queue!(
+                stdout,
+                cursor::MoveToColumn(center),
+                Print(&format!(
+                    "{}",
+                    H_LINE.repeat(TILE_WIDTH as usize * 8 + 8 + 1)
+                )),
+            )?;
         }
+
+        // render pieces
+        for i in (0..8).rev() {
+            queue!(
+                stdout,
+                cursor::MoveTo(center, (TILE_HEIGHT as u16 * (7 - i)) + 1)
+            )?;
+
+            for j in 0..8 {
+                let piece = board.piece_at((i * 8 + j).into());
+
+                let mut piece_string = match piece {
+                    Some(ref p) => p.render(TILE_WIDTH).to_string(),
+                    None => "".into(),
+                };
+
+                if cursor_pos.0 == j && cursor_pos.1 == i {
+                    piece_string = match piece_string.is_empty() {
+                        false => format!("{}", piece_string.bold()),
+                        true => format!("{}", "*".bold()),
+                    };
+                }
+
+                let idx = 8;
+
+                if let Some(ref p) = board.piece_at(idx) {
+                    if board.generate_moves(idx, p).contains(&(i * 8 + j).into()) {
+                        piece_string = format!("{}", "*".with(Color::DarkGrey));
+                    }
+                }
+
+                queue!(
+                    stdout,
+                    cursor::MoveToColumn(center + 1 + (TILE_WIDTH as u16 + 1) * j as u16),
+                    Print(piece_string),
+                )?;
+            }
+        }
+
+        // top to bottom
+        /*for row in (0..8).rev() {
+            queue!(stdout, cursor::MoveTo(center, TILE_HEIGHT as u16 * row + 1),)?;
+
+            for file in 0..8 {
+                queue!(
+                    stdout,
+                    Print(format!("{}, {}", row, file)),
+                    cursor::MoveRight(1)
+                )?;
+            }
+        }*/
+
+        stdout.flush()?;
 
         if let Ok(Event::Input(k)) = events.next() {
             match k {
@@ -53,8 +127,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 _ => (),
             }
         }
-
-        stdout.flush().unwrap();
     }
 
     exit();
