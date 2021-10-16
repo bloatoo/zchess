@@ -58,10 +58,6 @@ impl Piece {
             piece_str = &piece_str[..tile_width]
         }
 
-        if self.side() == &Side::Black {
-            piece_str = "black"
-        }
-
         piece_str
     }
 }
