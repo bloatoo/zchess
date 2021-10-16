@@ -20,7 +20,34 @@ impl Square for usize {
     }
 }
 
-type Move = isize;
+pub enum MoveConstraint {
+    MaxMoves(usize),
+    PieceOnTargetSquare,
+}
+
+pub struct Move<'a> {
+    x: isize,
+    y: isize,
+    constraints: &'a [MoveConstraint],
+}
+
+const PAWN_MOVES: &[Move] = &[
+    Move {
+        x: 0,
+        y: 2,
+        constraints: &[MoveConstraint::MaxMoves(0)],
+    },
+    Move {
+        x: 0,
+        y: 1,
+        constraints: &[],
+    },
+    Move {
+        x: 1,
+        y: 1,
+        constraints: &[MoveConstraint::PieceOnTargetSquare],
+    },
+];
 
 #[derive(Debug, Clone)]
 pub struct Board {
@@ -108,9 +135,35 @@ impl Board {
                             }
                         }
                     } else {
+                        if let None = self.piece_at(sq + 8) {
+                            moves.push(sq + 8);
+                        }
                     }
                 }
-                Side::Black => {}
+
+                Side::Black => {
+                    if sq.y() == 6 {
+                        let mut valid = true;
+
+                        for mv in [sq - 8, sq - 16] {
+                            if !valid {
+                                continue;
+                            }
+                            if let Some(_) = self.piece_at(mv) {
+                                valid = false;
+                                continue;
+                            } else {
+                                moves.push(mv);
+                            }
+                        }
+                    } else {
+                        if let None = self.piece_at(sq - 8) {
+                            moves.push(sq - 8);
+                        }
+                    }
+
+                    let upper = sq - 8;
+                }
             },
             _ => (),
         }

@@ -12,6 +12,7 @@ pub enum PieceKind {
 pub struct Piece {
     kind: PieceKind,
     side: Side,
+    move_count: u32,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -22,7 +23,11 @@ pub enum Side {
 
 impl Piece {
     pub fn new(kind: PieceKind, side: Side) -> Self {
-        Self { kind, side }
+        Self {
+            kind,
+            side,
+            move_count: 0,
+        }
     }
 
     pub fn kind(&self) -> &PieceKind {
