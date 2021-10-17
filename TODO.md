@@ -7,3 +7,4 @@
 - [ ] Finish move generation
 - [ ] Integrate Lichess API
 - [ ] Resize board dynamically as the terminal size changes
+- [ ] King move generation without a stack overflow lol

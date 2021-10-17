@@ -1,22 +1,26 @@
 use super::utils::calculate_squares_to_edge;
 use crate::chess::{board::Edge, Board, Move, Piece};
+use lazy_static::lazy_static;
 
-pub const ROOK_MOVES: &[Move] = &[
-    Move {
-        x: 8,
-        y: 0,
-        constraints: &[],
-    },
-    Move {
-        x: 0,
-        y: 8,
-        constraints: &[],
-    },
-];
+lazy_static! {
+    pub static ref ROOK_MOVES: Vec<Move> = vec![
+        Move {
+            x: 8,
+            y: 0,
+            constraints: Vec::new(),
+        },
+        Move {
+            x: 0,
+            y: 8,
+            constraints: Vec::new(),
+        },
+    ];
+}
+
 pub fn generate_rook_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usize> {
     let mut moves = vec![];
 
-    for mv in ROOK_MOVES {
+    for mv in ROOK_MOVES.iter() {
         if mv.x == 0 {
             let top_edge = calculate_squares_to_edge(Edge::Top, sq);
             let mut valid = true;

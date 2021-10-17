@@ -1,6 +1,7 @@
 use super::{Piece, PieceKind, Side};
 
 use crate::chess::moves::bishop::generate_bishop_moves;
+use crate::chess::moves::king::generate_king_moves;
 use crate::chess::moves::knight::generate_knight_moves;
 use crate::chess::moves::pawn::generate_pawn_moves;
 use crate::chess::moves::queen::generate_queen_moves;
@@ -40,18 +41,18 @@ pub enum Edge {
     Bottom,
 }
 
-pub struct Move<'a> {
+pub struct Move {
     pub x: isize,
     pub y: isize,
-    pub constraints: &'a [MoveConstraint],
+    pub constraints: Vec<MoveConstraint>,
 }
 
-impl<'a> Move<'a> {
+impl Move {
     pub fn invert_coordinates(&self) -> Self {
         Self {
             x: -self.x,
             y: -self.y,
-            constraints: self.constraints,
+            constraints: self.constraints.clone(),
         }
     }
 }
@@ -127,7 +128,7 @@ impl Board {
             Knight => generate_knight_moves(&self, sq, piece),
             Bishop => generate_bishop_moves(&self, sq, piece),
             Queen => generate_queen_moves(&self, sq, piece),
-            _ => vec![],
+            King => generate_king_moves(&self, sq, piece),
         }
     }
 

@@ -1,54 +1,57 @@
 use super::utils::calculate_squares_to_edge;
 use crate::chess::{board::Edge, Board, Move, Piece, Side};
+use lazy_static::lazy_static;
 use std::cmp::Ordering;
 
-pub const KNIGHT_MOVES: &[Move] = &[
-    Move {
-        x: 1,
-        y: 2,
-        constraints: &[],
-    },
-    Move {
-        x: -1,
-        y: 2,
-        constraints: &[],
-    },
-    Move {
-        x: 2,
-        y: 1,
-        constraints: &[],
-    },
-    Move {
-        x: -2,
-        y: 1,
-        constraints: &[],
-    },
-    Move {
-        x: 2,
-        y: -1,
-        constraints: &[],
-    },
-    Move {
-        x: -2,
-        y: -1,
-        constraints: &[],
-    },
-    Move {
-        x: 1,
-        y: -2,
-        constraints: &[],
-    },
-    Move {
-        x: -1,
-        y: -2,
-        constraints: &[],
-    },
-];
+lazy_static! {
+    pub static ref KNIGHT_MOVES: Vec<Move> = vec![
+        Move {
+            x: 1,
+            y: 2,
+            constraints: Vec::new(),
+        },
+        Move {
+            x: -1,
+            y: 2,
+            constraints: Vec::new(),
+        },
+        Move {
+            x: 2,
+            y: 1,
+            constraints: Vec::new(),
+        },
+        Move {
+            x: -2,
+            y: 1,
+            constraints: Vec::new(),
+        },
+        Move {
+            x: 2,
+            y: -1,
+            constraints: Vec::new(),
+        },
+        Move {
+            x: -2,
+            y: -1,
+            constraints: Vec::new(),
+        },
+        Move {
+            x: 1,
+            y: -2,
+            constraints: Vec::new(),
+        },
+        Move {
+            x: -1,
+            y: -2,
+            constraints: Vec::new(),
+        },
+    ];
+}
 
 pub fn generate_knight_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usize> {
     let mut moves = vec![];
 
-    for mv in KNIGHT_MOVES {
+    for mv in KNIGHT_MOVES.iter() {
         let (x, y): (isize, isize) = match piece.side() {
             Side::White => (mv.x, mv.y),
             Side::Black => {

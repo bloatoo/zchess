@@ -2,28 +2,32 @@ use super::utils::calculate_squares_to_edge;
 use crate::chess::{board::Edge, Board, Move, MoveConstraint, Piece, Side};
 use std::cmp::Ordering;
 
-pub const PAWN_MOVES: &[Move] = &[
-    Move {
-        x: 0,
-        y: 2,
-        constraints: &[MoveConstraint::MaxMoves(0)],
-    },
-    Move {
-        x: 0,
-        y: 1,
-        constraints: &[],
-    },
-    Move {
-        x: 1,
-        y: 1,
-        constraints: &[MoveConstraint::PieceOnTargetSquare],
-    },
-    Move {
-        x: -1,
-        y: 1,
-        constraints: &[MoveConstraint::PieceOnTargetSquare],
-    },
-];
+use lazy_static::lazy_static;
+
+lazy_static! {
+    pub static ref PAWN_MOVES: Vec<Move> = vec![
+        Move {
+            x: 0,
+            y: 2,
+            constraints: vec![MoveConstraint::MaxMoves(0)],
+        },
+        Move {
+            x: 0,
+            y: 1,
+            constraints: Vec::new(),
+        },
+        Move {
+            x: 1,
+            y: 1,
+            constraints: vec![MoveConstraint::PieceOnTargetSquare],
+        },
+        Move {
+            x: -1,
+            y: 1,
+            constraints: vec![MoveConstraint::PieceOnTargetSquare],
+        },
+    ];
+}
 
 pub fn generate_pawn_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usize> {
     let mut moves = vec![];
@@ -42,7 +46,7 @@ pub fn generate_pawn_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usize
         let mut move_constr = false;
         let mut max_constr = false;
 
-        for c in mv.constraints {
+        for c in mv.constraints.iter() {
             match c {
                 MoveConstraint::MaxMoves(a) => {
                     if piece.move_count() > &(*a as u32) {
@@ -52,7 +56,7 @@ pub fn generate_pawn_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usize
                     max_constr = true;
                 }
 
-                &MoveConstraint::PieceOnTargetSquare => {
+                MoveConstraint::PieceOnTargetSquare => {
                     if let None = board.piece_at(final_sq) {
                         continue 'moves;
                     }

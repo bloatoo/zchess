@@ -1,33 +1,36 @@
 use crate::chess::{board::Edge, Board, Move, Piece, Side, Square};
+use lazy_static::lazy_static;
 use std::cmp::Ordering;
 
-pub const BISHOP_MOVES: &[Move] = &[
-    Move {
-        x: 8,
-        y: 8,
-        constraints: &[],
-    },
-    Move {
-        x: -8,
-        y: 8,
-        constraints: &[],
-    },
-    Move {
-        x: 8,
-        y: -8,
-        constraints: &[],
-    },
-    Move {
-        x: -8,
-        y: -8,
-        constraints: &[],
-    },
-];
+lazy_static! {
+    pub static ref BISHOP_MOVES: Vec<Move> = vec![
+        Move {
+            x: 8,
+            y: 8,
+            constraints: Vec::new(),
+        },
+        Move {
+            x: -8,
+            y: 8,
+            constraints: Vec::new(),
+        },
+        Move {
+            x: 8,
+            y: -8,
+            constraints: Vec::new(),
+        },
+        Move {
+            x: -8,
+            y: -8,
+            constraints: Vec::new(),
+        },
+    ];
+}
 
 pub fn generate_bishop_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usize> {
     let mut moves = vec![];
 
-    'moves: for mv in BISHOP_MOVES {
+    'moves: for mv in BISHOP_MOVES.iter() {
         let (x, y) = match piece.side() {
             Side::White => (mv.x, mv.y),
             Side::Black => {
