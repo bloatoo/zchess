@@ -167,6 +167,6 @@ impl Board {
 
 impl Default for Board {
     fn default() -> Self {
-        Self::from_str("RNBQKBNR/PPPPPPPP/3p4/5R2/8/4p3/pppppppp/rnbqkbnr")
+        Self::from_str("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr")
     }
 }
