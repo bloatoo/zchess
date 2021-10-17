@@ -111,7 +111,7 @@ pub fn draw_board(
                     false => format!("{}", piece_string.bold()),
                     true => format!("{}", "*".bold()),
                 };
-            } else if let Some(pos) = selected_piece {
+            } else if let Some(_) = selected_piece {
                 if board
                     .current_generated_moves()
                     .contains(&(i * 8 + j).into())
@@ -192,6 +192,7 @@ pub fn start(mut board: Board) -> Result<(), Box<dyn std::error::Error>> {
 
                                 board.make_move(idx, cursor_idx);
                                 selected_piece = None;
+                                board.set_generated_moves(vec![]);
                             }
                         }
                         _ => (),

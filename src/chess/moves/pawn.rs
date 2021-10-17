@@ -77,7 +77,13 @@ pub fn generate_pawn_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usize
         }
 
         if max_constr && (y == 2 || y == -2) {
-            if board.piece_at(sq + 8).is_some() || board.piece_at(sq + 16).is_some() {
+            if board
+                .piece_at((sq as isize + idx_change) as usize)
+                .is_some()
+                || board
+                    .piece_at((sq as isize + idx_change / 2) as usize)
+                    .is_some()
+            {
                 continue 'moves;
             }
         }
