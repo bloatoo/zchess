@@ -1,7 +1,4 @@
-use chess::{
-    chess::{Board, Piece, Square},
-    ui::event::*,
-};
+use chess::{chess::Board, ui::event::*};
 
 const TILE_WIDTH: usize = 8;
 const TILE_HEIGHT: usize = 4;
@@ -16,7 +13,6 @@ use crossterm::{
         self, disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen,
         LeaveAlternateScreen,
     },
-    ExecutableCommand,
 };
 
 fn panic_hook(info: &PanicInfo<'_>) {
@@ -64,8 +60,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let size = terminal::size()?;
         let center = size.0 / 2 - TILE_WIDTH as u16 * 4 - 2;
 
-        let idx = (cursor_pos.1 * 8 + cursor_pos.0) as usize;
-
         // print top vertical line
         queue!(
             stdout,
@@ -107,8 +101,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             for j in 0..8 {
                 let piece = board.piece_at((i * 8 + j).into());
 
-                let mut piece_string = match piece {
-                    Some(ref p) => p.render(TILE_WIDTH).to_string(),
+                let mut piece_string;
+
+                piece_string = match piece {
+                    Some(ref p) => {
+                        if TILE_WIDTH > 4 {
+                            p.render(TILE_WIDTH).to_string()
+                        } else {
+                            p.render_2c().to_string()
+                        }
+                    }
                     None => "".into(),
                 };
 
@@ -235,11 +237,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         _ => (),
                     },
                     None => {
-                        if board
-                            .piece_at((cursor_pos.1 * 8 + cursor_pos.0) as usize)
-                            .is_some()
+                        if let Some(p) = board.piece_at((cursor_pos.1 * 8 + cursor_pos.0) as usize)
                         {
-                            selected_piece = Some((cursor_pos.0 as usize, cursor_pos.1 as usize));
+                            if p.side() == board.turn() {
+                                selected_piece =
+                                    Some((cursor_pos.0 as usize, cursor_pos.1 as usize));
+                            }
                         }
                     }
                 },

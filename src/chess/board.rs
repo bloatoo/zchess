@@ -58,6 +58,7 @@ impl<'a> Move<'a> {
 pub struct Board {
     pieces: Vec<Option<Piece>>,
     en_passant: Option<usize>,
+    turn: Side,
 }
 
 impl Board {
@@ -71,11 +72,12 @@ impl Board {
 
         Self {
             pieces,
+            turn: Side::White,
             en_passant: None,
         }
     }
 
-    pub fn from_str(fen: &str) -> Self {
+    pub fn from_str(fen: &str, turn: Side) -> Self {
         let mut pieces: Vec<Option<Piece>> = vec![];
 
         for row in fen.split("/") {
@@ -109,6 +111,7 @@ impl Board {
 
         Self {
             pieces,
+            turn,
             en_passant: None,
         }
     }
@@ -128,6 +131,11 @@ impl Board {
         let piece = self.piece_at(source).clone().unwrap();
         self.set_piece(dest, Some(piece));
         self.set_piece(source, None);
+
+        self.turn = match self.turn {
+            Side::White => Side::Black,
+            Side::Black => Side::White,
+        };
     }
 
     fn set_piece(&mut self, dest: usize, piece: Option<Piece>) {
@@ -154,10 +162,14 @@ impl Board {
     pub fn pieces_mut(&mut self) -> &mut Vec<Option<Piece>> {
         &mut self.pieces
     }
+
+    pub fn turn(&self) -> &Side {
+        &self.turn
+    }
 }
 
 impl Default for Board {
     fn default() -> Self {
-        Self::from_str("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr")
+        Self::from_str("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr", Side::White)
     }
 }

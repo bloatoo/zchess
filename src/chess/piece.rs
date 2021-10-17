@@ -64,6 +64,18 @@ impl Piece {
 
         piece_str
     }
+
+    pub fn render_2c(&self) -> &str {
+        use PieceKind::*;
+        match self.kind {
+            Pawn => "pw",
+            Rook => "rk",
+            Bishop => "bp",
+            Knight => "kn",
+            Queen => "qn",
+            King => "kg",
+        }
+    }
 }
 
 impl AsRef<str> for Piece {
