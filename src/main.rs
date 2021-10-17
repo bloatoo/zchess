@@ -135,6 +135,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     piece_string = "*".into()
                 }
 
+                if let Some((x, y)) = selected_piece {
+                    if x == j as usize && y == i as usize {
+                        piece_string = format!("{}", piece_string.bold());
+                    }
+                }
+
                 if cursor_pos.0 == j && cursor_pos.1 == i {
                     piece_string = match piece_string.is_empty() {
                         false => format!("{}", piece_string.bold()),
@@ -202,6 +208,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }
 
+                Key::Backspace => {
+                    selected_piece = None;
+                }
+
                 Key::Enter => match selected_piece {
                     Some(p) => match board.piece_at(p.1 * 8 + p.0) {
                         Some(ref piece) => {
@@ -224,7 +234,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         }
                         _ => (),
                     },
-                    None => selected_piece = Some((cursor_pos.0 as usize, cursor_pos.1 as usize)),
+                    None => {
+                        if board
+                            .piece_at((cursor_pos.1 * 8 + cursor_pos.0) as usize)
+                            .is_some()
+                        {
+                            selected_piece = Some((cursor_pos.0 as usize, cursor_pos.1 as usize));
+                        }
+                    }
                 },
                 _ => (),
             }
