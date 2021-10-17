@@ -1,4 +1,8 @@
-use chess::{chess::Board, ui::event::*};
+use chess::{chess::Board, message::Message, ui::event::*};
+use eventsource_stream::Eventsource;
+use futures::stream::StreamExt;
+use reqwest::{Client, RequestBuilder};
+use std::sync::mpsc::{self, Receiver};
 
 const TILE_WIDTH: usize = 8;
 const TILE_HEIGHT: usize = 4;
@@ -39,8 +43,31 @@ fn panic_hook(info: &PanicInfo<'_>) {
     .unwrap();
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::panic::set_hook(Box::new(|info| panic_hook(info)));
+
+    /*let (main_tx, main_rx) = mpsc::channel::<Message>();
+
+    let stream_tx = main_tx.clone();
+
+    tokio::spawn(async move {
+        let client = Client::new();
+
+        let mut main_event_stream = client
+            .get("https://lichess.org/api/stream/event")
+            .header("Authorization", "Bearer {token}")
+            .header("Content-Type", "application/x-ndjson")
+            .send()
+            .await
+            .unwrap()
+            .bytes_stream();
+
+        while let Some(_ev) = main_event_stream.next().await {}
+    });
+
+    event_loop(main_rx)
+    */
 
     let events = Events::new(1024);
 
@@ -157,11 +184,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     {
                         piece_string = format!("{}", "*".with(Color::DarkGrey));
                     }
-                } /* else if let Some(ref p) = board.piece_at(idx) {
-                      if board.generate_moves(idx, p).contains(&(i * 8 + j).into()) {
-                          piece_string = format!("{}", "*".with(Color::DarkGrey));
-                      }
-                  }*/
+                }
 
                 queue!(
                     stdout,
@@ -170,19 +193,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 )?;
             }
         }
-
-        // top to bottom
-        /*for row in (0..8).rev() {
-            queue!(stdout, cursor::MoveTo(center, TILE_HEIGHT as u16 * row + 1),)?;
-
-            for file in 0..8 {
-                queue!(
-                    stdout,
-                    Print(format!("{}, {}", row, file)),
-                    cursor::MoveRight(1)
-                )?;
-            }
-        }*/
 
         stdout.flush()?;
 
@@ -253,6 +263,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     exit();
     Ok(())
+}
+
+#[tokio::main]
+async fn event_loop(rx: Receiver<Message>) {
+    while let Ok(_ev) = rx.recv() {}
 }
 
 fn exit() {
