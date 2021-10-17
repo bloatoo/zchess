@@ -1,7 +1,7 @@
 use super::utils::calculate_squares_to_edge;
 use crate::chess::{board::Edge, Board, Move, Piece};
 
-const ROOK_MOVES: &[Move] = &[
+pub const ROOK_MOVES: &[Move] = &[
     Move {
         x: 8,
         y: 0,

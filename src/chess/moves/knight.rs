@@ -2,7 +2,7 @@ use super::utils::calculate_squares_to_edge;
 use crate::chess::{board::Edge, Board, Move, Piece, Side};
 use std::cmp::Ordering;
 
-const KNIGHT_MOVES: &[Move] = &[
+pub const KNIGHT_MOVES: &[Move] = &[
     Move {
         x: 1,
         y: 2,
