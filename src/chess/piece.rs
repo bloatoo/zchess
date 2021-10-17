@@ -42,6 +42,10 @@ impl Piece {
         &self.move_count
     }
 
+    pub fn increment_moves(&mut self) {
+        self.move_count += 1;
+    }
+
     pub fn render(&self, tile_width: usize) -> &str {
         use PieceKind::*;
 

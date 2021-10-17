@@ -159,6 +159,10 @@ impl Board {
     pub fn pieces(&self) -> &Vec<Option<Piece>> {
         &self.pieces
     }
+
+    pub fn pieces_mut(&mut self) -> &mut Vec<Option<Piece>> {
+        &mut self.pieces
+    }
 }
 
 impl Default for Board {

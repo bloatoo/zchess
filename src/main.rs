@@ -1,5 +1,5 @@
 use chess::{
-    chess::{Board, Square},
+    chess::{Board, Piece, Square},
     ui::event::*,
 };
 
@@ -177,10 +177,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         Some(ref piece) => {
                             let idx = p.1 * 8 + p.0;
                             let cursor_idx: usize = (cursor_pos.1 * 8 + cursor_pos.0) as usize;
+
                             if board
-                                .generate_moves(p.1 * 8 + p.0, piece)
+                                .generate_moves(p.1 * 8 + p.0, &piece)
                                 .contains(&cursor_idx)
                             {
+                                drop(piece);
+
+                                let piece =
+                                    board.pieces_mut().get_mut(idx).unwrap().as_mut().unwrap();
+                                piece.increment_moves();
+
                                 board.make_move(idx, cursor_idx);
                                 selected_piece = None;
                             }
