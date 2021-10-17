@@ -49,7 +49,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let events = Events::new(1024);
 
     let mut stdout = std::io::stdout();
-    stdout.execute(EnterAlternateScreen)?;
+    execute!(stdout, cursor::Hide, EnterAlternateScreen)?;
     enable_raw_mode()?;
 
     let mut cursor_pos = (0, 0);
@@ -151,18 +151,39 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if let Ok(Event::Input(k)) = events.next() {
             match k {
                 Key::Char('q') => break,
-                Key::Char('h') => cursor_pos.0 -= 1,
-                Key::Char('j') => cursor_pos.1 -= 1,
-                Key::Char('k') => cursor_pos.1 += 1,
-                Key::Char('l') => cursor_pos.0 += 1,
+                Key::Char('h') => {
+                    if cursor_pos.0 >= 1 {
+                        cursor_pos.0 -= 1;
+                    }
+                }
+                Key::Char('j') => {
+                    if cursor_pos.1 >= 1 {
+                        cursor_pos.1 -= 1;
+                    }
+                }
+                Key::Char('k') => {
+                    if cursor_pos.1 < 7 {
+                        cursor_pos.1 += 1;
+                    }
+                }
+                Key::Char('l') => {
+                    if cursor_pos.0 < 7 {
+                        cursor_pos.0 += 1;
+                    }
+                }
 
                 Key::Enter => match selected_piece {
                     Some(p) => match board.piece_at(p.1 * 8 + p.0) {
-                        Some(_) => {
+                        Some(ref piece) => {
                             let idx = p.1 * 8 + p.0;
-                            let cursor_idx = cursor_pos.1 * 8 + cursor_pos.0;
-                            board.make_move(idx, cursor_idx.into());
-                            selected_piece = None;
+                            let cursor_idx: usize = (cursor_pos.1 * 8 + cursor_pos.0) as usize;
+                            if board
+                                .generate_moves(p.1 * 8 + p.0, piece)
+                                .contains(&cursor_idx)
+                            {
+                                board.make_move(idx, cursor_idx);
+                                selected_piece = None;
+                            }
                         }
                         _ => (),
                     },
@@ -179,6 +200,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 fn exit() {
     let mut stdout = std::io::stdout();
-    stdout.execute(LeaveAlternateScreen).unwrap();
+    execute!(stdout, LeaveAlternateScreen, cursor::Show).unwrap();
     disable_raw_mode().unwrap();
 }
