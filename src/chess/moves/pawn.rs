@@ -40,6 +40,7 @@ pub fn generate_pawn_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usize
 
         let final_sq = (sq as isize + idx_change) as usize;
         let mut move_constr = false;
+        let mut max_constr = false;
 
         for c in mv.constraints {
             match c {
@@ -47,6 +48,8 @@ pub fn generate_pawn_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usize
                     if piece.move_count() > &(*a as u32) {
                         continue 'moves;
                     }
+
+                    max_constr = true;
                 }
 
                 &MoveConstraint::PieceOnTargetSquare => {
@@ -67,6 +70,12 @@ pub fn generate_pawn_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usize
 
         if !is_corner {
             continue 'moves;
+        }
+
+        if max_constr && (y == 2 || y == -2) {
+            if board.piece_at(sq + 8).is_some() || board.piece_at(sq + 16).is_some() {
+                continue 'moves;
+            }
         }
 
         if move_constr {
