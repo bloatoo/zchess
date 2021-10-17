@@ -79,7 +79,8 @@ pub fn generate_rook_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usize
             }
 
             let left_edge = calculate_squares_to_edge(Edge::Left, sq);
-            let mut _valid = true;
+            let mut valid = true;
+
             for i in 1..=left_edge {
                 if !valid {
                     continue;
