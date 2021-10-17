@@ -99,6 +99,15 @@ pub fn generate_knight_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usi
             continue;
         }
 
+        let is_piece_ok = match board.piece_at(final_sq) {
+            Some(ref p) => piece.side() != p.side(),
+            None => true,
+        };
+
+        if !is_piece_ok {
+            continue;
+        }
+
         moves.push(final_sq);
     }
 
