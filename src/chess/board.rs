@@ -62,22 +62,13 @@ pub struct Board {
     pieces: Vec<Option<Piece>>,
     en_passant: Option<usize>,
     turn: Side,
+    current_generated_moves: Vec<usize>,
 }
 
 impl Board {
     // mainly for unit testing
-    pub fn empty() -> Self {
-        let mut pieces = Vec::with_capacity(64);
-
-        for _ in 0..64 {
-            pieces.push(None);
-        }
-
-        Self {
-            pieces,
-            turn: Side::White,
-            en_passant: None,
-        }
+    pub fn current_generated_moves(&self) -> &Vec<usize> {
+        &self.current_generated_moves
     }
 
     pub fn from_str(fen: &str, turn: Side) -> Self {
@@ -116,6 +107,7 @@ impl Board {
             pieces,
             turn,
             en_passant: None,
+            current_generated_moves: vec![],
         }
     }
 
@@ -170,6 +162,10 @@ impl Board {
 
     pub fn turn(&self) -> &Side {
         &self.turn
+    }
+
+    pub fn set_generated_moves(&mut self, moves: Vec<usize>) {
+        self.current_generated_moves = moves;
     }
 }
 

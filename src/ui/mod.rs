@@ -83,12 +83,8 @@ pub fn draw_board(
 
             let is_selected_sq = match selected_piece {
                 Some((x, y)) => {
-                    let selected_idx = y * 8 + x;
                     if board
-                        .generate_moves(
-                            selected_idx,
-                            &board.piece_at(selected_idx).as_ref().unwrap(),
-                        )
+                        .current_generated_moves()
                         .contains(&(i * 8 + j).into())
                     {
                         true
@@ -116,10 +112,8 @@ pub fn draw_board(
                     true => format!("{}", "*".bold()),
                 };
             } else if let Some(pos) = selected_piece {
-                let idx = pos.1 * 8 + pos.0;
-                let piece = board.piece_at(idx).as_ref().unwrap();
                 if board
-                    .generate_moves(idx, piece)
+                    .current_generated_moves()
                     .contains(&(i * 8 + j).into())
                 {
                     piece_string = format!("{}", "*".with(Color::DarkGrey));
@@ -203,11 +197,14 @@ pub fn start(mut board: Board) -> Result<(), Box<dyn std::error::Error>> {
                         _ => (),
                     },
                     None => {
-                        if let Some(p) = board.piece_at((cursor_pos.1 * 8 + cursor_pos.0) as usize)
-                        {
+                        let idx = (cursor_pos.1 * 8 + cursor_pos.0) as usize;
+
+                        if let Some(ref p) = board.piece_at(idx) {
                             if p.side() == board.turn() {
                                 selected_piece =
                                     Some((cursor_pos.0 as usize, cursor_pos.1 as usize));
+
+                                board.set_generated_moves(board.generate_moves(idx, p));
                             }
                         }
                     }
