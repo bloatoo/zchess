@@ -71,7 +71,7 @@ pub fn generate_pawn_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usize
             Ordering::Less => {
                 let to_edge = calculate_squares_to_edge(Edge::Left, sq);
 
-                if to_edge as isize >= x {
+                if to_edge as isize >= -x {
                     true
                 } else {
                     continue 'moves;

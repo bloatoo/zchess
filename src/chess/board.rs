@@ -1,5 +1,6 @@
 use super::{Piece, PieceKind, Side};
 
+use crate::chess::moves::knight::generate_knight_moves;
 use crate::chess::moves::pawn::generate_pawn_moves;
 use crate::chess::moves::rook::generate_rook_moves;
 
@@ -50,17 +51,6 @@ impl<'a> Move<'a> {
             y: -self.y,
             constraints: self.constraints,
         }
-    }
-}
-
-fn calculate_squares_to_edge(edge: Edge, sq: usize) -> usize {
-    use Edge::*;
-
-    match edge {
-        Right => 7 - sq.x(),
-        Left => sq.x(),
-        Top => 7 - sq.y(),
-        Bottom => sq.y(),
     }
 }
 
@@ -129,6 +119,7 @@ impl Board {
         match piece.kind() {
             Pawn => generate_pawn_moves(&self, sq, piece),
             Rook => generate_rook_moves(&self, sq, piece),
+            Knight => generate_knight_moves(&self, sq, piece),
             _ => vec![],
         }
     }

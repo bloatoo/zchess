@@ -16,7 +16,7 @@ const ROOK_MOVES: &[Move] = &[
 pub fn generate_rook_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usize> {
     let mut moves = vec![];
 
-    for mv in ROOK_MOVES.iter() {
+    for mv in ROOK_MOVES {
         if mv.x == 0 {
             let top_edge = calculate_squares_to_edge(Edge::Top, sq);
             let mut valid = true;
