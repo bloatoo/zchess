@@ -60,37 +60,24 @@ pub fn generate_pawn_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usize
         }
 
         let is_corner = match x.cmp(&0) {
-            Ordering::Greater => {
-                let to_edge = calculate_squares_to_edge(Edge::Right, sq);
-                if to_edge >= x as usize {
-                    true
-                } else {
-                    continue 'moves;
-                }
-            }
-            Ordering::Less => {
-                let to_edge = calculate_squares_to_edge(Edge::Left, sq);
-
-                if to_edge as isize >= -x {
-                    true
-                } else {
-                    continue 'moves;
-                }
-            }
+            Ordering::Greater => calculate_squares_to_edge(Edge::Right, sq) >= x as usize,
+            Ordering::Less => calculate_squares_to_edge(Edge::Left, sq) as isize >= -x,
             _ => true,
         };
 
-        if is_corner {
-            if move_constr {
-                if let Some(p) = board.piece_at(final_sq) {
-                    if p.side() != piece.side() {
-                        moves.push(final_sq);
-                    }
-                }
-            } else {
-                if board.piece_at(final_sq).is_none() {
+        if !is_corner {
+            continue 'moves;
+        }
+
+        if move_constr {
+            if let Some(p) = board.piece_at(final_sq) {
+                if p.side() != piece.side() {
                     moves.push(final_sq);
                 }
+            }
+        } else {
+            if board.piece_at(final_sq).is_none() {
+                moves.push(final_sq);
             }
         }
     }
