@@ -112,18 +112,48 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     None => "".into(),
                 };
 
+                let is_selected_sq = match selected_piece {
+                    Some((x, y)) => {
+                        let selected_idx = y * 8 + x;
+                        if board
+                            .generate_moves(
+                                selected_idx,
+                                &board.piece_at(selected_idx).as_ref().unwrap(),
+                            )
+                            .contains(&(i * 8 + j).into())
+                        {
+                            true
+                        } else {
+                            false
+                        }
+                    }
+
+                    None => false,
+                };
+
+                if is_selected_sq {
+                    piece_string = "*".into()
+                }
+
                 if cursor_pos.0 == j && cursor_pos.1 == i {
                     piece_string = match piece_string.is_empty() {
                         false => format!("{}", piece_string.bold()),
                         true => format!("{}", "*".bold()),
                     };
-                }
-
-                if let Some(ref p) = board.piece_at(idx) {
-                    if board.generate_moves(idx, p).contains(&(i * 8 + j).into()) {
+                } else if let Some(pos) = selected_piece {
+                    let idx = pos.1 * 8 + pos.0;
+                    let piece = board.piece_at(idx).as_ref().unwrap();
+                    if board
+                        .generate_moves(idx, piece)
+                        .contains(&(i * 8 + j).into())
+                    {
                         piece_string = format!("{}", "*".with(Color::DarkGrey));
                     }
-                }
+                } /* else if let Some(ref p) = board.piece_at(idx) {
+                      if board.generate_moves(idx, p).contains(&(i * 8 + j).into()) {
+                          piece_string = format!("{}", "*".with(Color::DarkGrey));
+                      }
+                  }*/
 
                 queue!(
                     stdout,
