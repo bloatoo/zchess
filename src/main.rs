@@ -56,7 +56,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut main_event_stream = client
         .get("https://lichess.org/api/stream/event")
-        .header("Authorization", "Bearer ")
+        .header("Authorization", "Bearer abc")
         .header("Content-Type", "application/x-ndjson")
         .send()
         .await
@@ -71,6 +71,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             if ev_string.len() > 1 {
                 let json: Value =
                     serde_json::from_str(&ev_string).unwrap_or_else(|_| panic!("{}", ev_string));
+
+                if let Some(p) = json.get("error") {
+                    panic!("{}", p);
+                }
 
                 match json["type"].as_str().unwrap() {
                     "gameStart" => {}
