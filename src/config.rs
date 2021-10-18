@@ -26,4 +26,8 @@ impl Config {
     pub fn pieces(&self) -> &HashMap<String, Piece> {
         &self.pieces
     }
+
+    pub fn token(&self) -> &String {
+        &self.token
+    }
 }

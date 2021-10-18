@@ -45,17 +45,19 @@ fn panic_hook(info: &PanicInfo<'_>) {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::panic::set_hook(Box::new(|info| panic_hook(info)));
 
-    let app = Arc::new(Mutex::new(App::default()));
-
     let (main_tx, main_rx) = mpsc::channel::<Message>();
+
+    let app = App::new(main_tx.clone());
 
     let stream_tx = main_tx.clone();
 
     let client = Client::new();
 
+    let token = format!("Bearer {}", app.config().token());
+
     let mut main_event_stream = client
         .get("https://lichess.org/api/stream/event")
-        .header("Authorization", "Bearer abc")
+        .header("Authorization", token)
         .header("Content-Type", "application/x-ndjson")
         .send()
         .await
@@ -76,23 +78,38 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
 
                 match json["type"].as_str().unwrap() {
-                    "gameStart" => {}
+                    "gameStart" => {
+                        let game_id = json["game"]["id"].as_str().unwrap();
+
+                        stream_tx.send(Message::GameStart(game_id.into())).unwrap();
+                    }
                     _ => (),
                 }
             }
         }
     });
 
+    let app = Arc::new(Mutex::new(app));
+    let app_clone = app.clone();
+
     std::thread::spawn(move || {
-        event_loop(main_rx);
+        event_loop(main_rx, app_clone);
     });
 
-    ui::start(app, main_tx)?;
+    ui::start(app, main_tx).await?;
 
     Ok(())
 }
 
 #[tokio::main]
-async fn event_loop(rx: Receiver<Message>) {
-    while let Ok(_ev) = rx.recv() {}
+async fn event_loop(rx: Receiver<Message>, app: Arc<Mutex<App>>) {
+    while let Ok(ev) = rx.recv() {
+        let mut app = app.lock().await;
+
+        match ev {
+            Message::GameStart(id) => {
+                app.start_new_game(id);
+            }
+        }
+    }
 }
