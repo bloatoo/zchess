@@ -1,5 +1,7 @@
 use chess::{chess::Board, message::Message, ui};
 use reqwest::Client;
+use serde_json::Value;
+use std::time::Duration;
 
 use futures::stream::StreamExt;
 use std::sync::mpsc::{self, Receiver};
@@ -41,7 +43,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::panic::set_hook(Box::new(|info| panic_hook(info)));
 
     let board = Board::default();
-    ui::start(board)?;
+    //ui::start(board)?;
 
     let (main_tx, main_rx) = mpsc::channel::<Message>();
 
@@ -49,22 +51,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let client = Client::new();
 
-    tokio::spawn(async move {
-        let mut main_event_stream = client
-            .get("https://lichess.org/api/stream/event")
-            .header("Authorization", "Bearer {}")
-            .header("Content-Type", "application/x-ndjson")
-            .send()
-            .await
-            .unwrap()
-            .bytes_stream();
+    let mut main_event_stream = client
+        .get("https://lichess.org/api/stream/event")
+        .header("Authorization", "Bearer")
+        .header("Content-Type", "application/x-ndjson")
+        .send()
+        .await
+        .unwrap()
+        .bytes_stream();
 
+    tokio::spawn(async move {
         loop {
-            /*let ev = main_event_stream.next().await;
-            match ev {
-                Some(r) => println!("some"),
-                None => println!("none"),
-            };*/
+            let ev = main_event_stream.next().await.unwrap().unwrap();
+            let ev_string = String::from_utf8(ev.to_vec()).unwrap();
+
+            if ev_string != "\n" {
+                let json: Value = serde_json::from_str(&ev_string).unwrap();
+
+                match json["type"].as_str().unwrap() {
+                    "gameStart" => {}
+                    _ => (),
+                }
+            }
         }
     });
 
