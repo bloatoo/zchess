@@ -13,3 +13,5 @@
 - [ ] Resize board dynamically as the terminal size changes
 - [ ] Castling
 - [ ] Pinning
+- [ ] Documentation
+- [ ] Menu UI
