@@ -62,7 +62,7 @@ pub fn generate_king_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usize
 
         for (idx, psq) in board.pieces().iter().enumerate() {
             if let Some(ref p) = psq {
-                if !(p.kind() == piece.kind()) {
+                if !(p.side() == board.turn() && p.kind() == piece.kind()) {
                     if board.generate_moves(idx, p).contains(&final_sq) && p.side() != piece.side()
                     {
                         continue 'moves;
