@@ -1,7 +1,6 @@
 use chess::{app::App, chess::Board, message::Message, ui};
 use reqwest::Client;
 use serde_json::Value;
-use std::time::Duration;
 
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -110,7 +109,11 @@ async fn event_loop(rx: Receiver<Message>, app: Arc<Mutex<App>>) {
 
         match ev {
             Message::GameStart(id) => {
-                app.start_new_game(id);
+                app.init_new_game(id);
+            }
+
+            Message::GameDataInit(game) => {
+                app.start_game(game);
             }
         }
     }

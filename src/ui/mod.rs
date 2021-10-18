@@ -1,9 +1,4 @@
-use crate::{
-    app::{App, Game},
-    chess::Board,
-    message::Message,
-    ui::event::*,
-};
+use crate::{app::App, game::Game, message::Message, ui::event::*};
 
 use std::io::{Stdout, Write};
 use std::sync::mpsc::Sender;
@@ -42,20 +37,44 @@ pub fn draw_board(
 
     let board = game.board();
 
+    let w_player = game.data().white();
+    let b_player = game.data().black();
+
+    let names = format!(
+        "white: {} ({}) | black: {} ({})",
+        w_player.name(),
+        w_player.id(),
+        b_player.name(),
+        b_player.id()
+    );
+
+    let clock = game.data().clock();
+
+    let statusline = format!(
+        "id: {} | {} | {}+{}",
+        game.id(),
+        names,
+        clock.initial(),
+        clock.increment()
+    );
+
     // print top vertical line
+    let (_, y) = terminal::size().unwrap();
+
     queue!(
         stdout,
         Clear(ClearType::All),
-        cursor::MoveTo(0, 0),
-        Print(game.id()),
+        cursor::MoveTo(0, y),
+        Print(statusline),
         cursor::MoveTo(center - 1, 0),
         Print(&format!("{}", H_LINE.repeat(TILE_WIDTH * 8 + 8 + 1))),
     )?;
 
+    // print rows
     for i in 1..=8 {
         execute!(
             stdout,
-            cursor::MoveTo(center - 3, TILE_HEIGHT as u16 * i - 2),
+            cursor::MoveTo(center - 3, TILE_HEIGHT as u16 * i - TILE_HEIGHT as u16 / 2),
             Print(9 - i),
             cursor::MoveTo(center - 1, 0),
         )?;
@@ -87,7 +106,9 @@ pub fn draw_board(
         queue!(
             stdout,
             cursor::MoveTo(
-                center + (TILE_WIDTH as u16 + 1) * idx as u16 - TILE_WIDTH as u16 / 2 - 1,
+                center + (TILE_WIDTH as u16 + 1) * idx as u16
+                    - (TILE_WIDTH as f32 / 2.0).ceil() as u16
+                    - 1,
                 TILE_HEIGHT as u16 * 8 + 1
             ),
             Print(c)
@@ -190,8 +211,13 @@ pub async fn start(
             }
 
             &UIState::Menu => {
-                let game = Game::new(Board::default(), "123");
-                draw_board(&game, cursor_pos, selected_piece, &mut stdout)?;
+                /*app.start_new_game("123");
+                draw_board(
+                    app.game().as_ref().unwrap(),
+                    cursor_pos,
+                    selected_piece,
+                    &mut stdout,
+                )?;*/
             }
         }
 
@@ -228,10 +254,9 @@ pub async fn start(
                     selected_piece = None;
                 }
 
-                Key::Ctrl('g') => {
+                /*Key::Ctrl('g') => {
                     app.start_new_game("abc");
-                }
-
+                }*/
                 Key::Enter => {
                     let board = app.game_mut().as_mut().unwrap().board_mut();
 

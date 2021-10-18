@@ -1,36 +1,13 @@
-use crate::chess::Board;
-use crate::config::Config;
-use crate::message::Message;
-use crate::ui::UIState;
+use crate::{
+    config::Config,
+    game::{Game, GameData, GameState},
+    message::Message,
+    ui::UIState,
+};
+
 use futures::stream::StreamExt;
-use std::io::Write;
+use serde_json::Value;
 use std::sync::mpsc::Sender;
-
-pub struct Game {
-    board: Board,
-    id: String,
-}
-
-impl Game {
-    pub fn new<T: ToString>(board: Board, id: T) -> Self {
-        Self {
-            board,
-            id: id.to_string(),
-        }
-    }
-
-    pub fn board(&self) -> &Board {
-        &self.board
-    }
-
-    pub fn id(&self) -> &String {
-        &self.id
-    }
-
-    pub fn board_mut(&mut self) -> &mut Board {
-        &mut self.board
-    }
-}
 
 pub struct App {
     game: Option<Game>,
@@ -85,10 +62,10 @@ impl App {
         });
     }
 
-    pub fn start_new_game<T: ToString>(&mut self, id: T) {
+    pub fn init_new_game<T: ToString>(&mut self, id: T) {
         let id = id.to_string();
-        self.game = Some(Game::new(Board::default(), id.clone()));
-        self.ui_state = UIState::Game;
+        //self.game = Some(Game::new(Board::default(), id.clone()));
+        //self.ui_state = UIState::Game;
 
         let tx = self.main_tx.clone();
 
@@ -110,7 +87,26 @@ impl App {
                 .unwrap()
                 .bytes_stream();
 
-            while let Some(_) = stream.next().await {}
+            while let Some(ev) = stream.next().await {
+                let ev = ev.unwrap();
+                let data = String::from_utf8(ev.to_vec()).unwrap();
+
+                if data.len() > 1 {
+                    let json: Value = serde_json::from_str(&data).unwrap();
+
+                    match json["type"].as_str().unwrap() {
+                        "gameFull" => {
+                            let state: GameState =
+                                serde_json::from_value(json["state"].clone()).unwrap();
+
+                            let data: GameData = serde_json::from_value(json).unwrap();
+                            let game = Game::new(id.clone(), data, state);
+                            tx.send(Message::GameDataInit(game)).unwrap();
+                        }
+                        _ => (),
+                    }
+                }
+            }
 
             // debugging
             /*let mut file = std::fs::OpenOptions::new()
@@ -132,6 +128,15 @@ impl App {
 
     pub fn set_ui_state(&mut self, state: UIState) {
         self.ui_state = state;
+    }
+
+    fn set_game(&mut self, game: Game) {
+        self.game = Some(game);
+    }
+
+    pub fn start_game(&mut self, game: Game) {
+        self.game = Some(game);
+        self.ui_state = UIState::Game;
     }
 }
 
