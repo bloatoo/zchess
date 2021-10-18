@@ -1,4 +1,9 @@
-use crate::{app::App, game::Game, message::Message, ui::event::*};
+use crate::{
+    app::App,
+    chess::{Side, Square},
+    message::Message,
+    ui::event::*,
+};
 
 use std::io::{Stdout, Write};
 use std::sync::mpsc::Sender;
@@ -26,7 +31,7 @@ pub enum UIState {
 }
 
 pub fn draw_board(
-    game: &Game,
+    app: &App,
     cursor_pos: (u16, u16),
     selected_piece: Option<(usize, usize)>,
     stdout: &mut Stdout,
@@ -34,6 +39,8 @@ pub fn draw_board(
     let tile_str = format!("│{}", " ".repeat(TILE_WIDTH));
     let size = terminal::size()?;
     let center = size.0 / 2 - TILE_WIDTH as u16 * 4 - 2;
+
+    let game = app.game().as_ref().unwrap();
 
     let board = game.board();
 
@@ -123,7 +130,12 @@ pub fn draw_board(
         )?;
 
         for j in 0..8 {
-            let piece = board.piece_at((i * 8 + j).into());
+            let idx = match app.check_own_side() {
+                Side::White => i * 8 + j,
+                Side::Black => 63 - (i * 8 + j),
+            };
+
+            let piece = board.piece_at(idx.into());
 
             let mut piece_string;
 
@@ -206,8 +218,7 @@ pub async fn start(
 
         match app.ui_state() {
             UIState::Game => {
-                let game = app.game().as_ref().unwrap();
-                draw_board(game, cursor_pos, selected_piece, &mut stdout)?;
+                draw_board(&app, cursor_pos, selected_piece, &mut stdout)?;
             }
 
             &UIState::Menu => {
@@ -258,40 +269,71 @@ pub async fn start(
                     app.start_new_game("abc");
                 }*/
                 Key::Enter => {
+                    let side = app.check_own_side();
                     let board = app.game_mut().as_mut().unwrap().board_mut();
 
                     match selected_piece {
-                        Some(p) => match board.piece_at(p.1 * 8 + p.0) {
-                            Some(ref piece) => {
-                                let idx = p.1 * 8 + p.0;
-                                let cursor_idx: usize = (cursor_pos.1 * 8 + cursor_pos.0) as usize;
+                        Some(p) => {
+                            let idx = match side {
+                                Side::White => p.1 * 8 + p.0,
+                                Side::Black => 63 - (p.1 * 8 + p.0),
+                            };
 
-                                if board
-                                    .generate_moves(p.1 * 8 + p.0, &piece)
-                                    .contains(&cursor_idx)
-                                {
-                                    drop(piece);
+                            match board.piece_at(idx) {
+                                Some(ref piece) => {
+                                    let cursor_idx = match side {
+                                        Side::White => (cursor_pos.1 * 8 + cursor_pos.0) as usize,
+                                        Side::Black => {
+                                            63 - ((cursor_pos.1 * 8 + cursor_pos.0) as usize)
+                                        }
+                                    };
 
-                                    let piece =
-                                        board.pieces_mut().get_mut(idx).unwrap().as_mut().unwrap();
-                                    piece.increment_moves();
+                                    if board /*.generate_moves(idx, &piece)*/
+                                        .current_generated_moves()
+                                        .contains(&cursor_idx)
+                                    {
+                                        drop(piece);
 
-                                    board.make_move(idx, cursor_idx);
-                                    selected_piece = None;
-                                    board.set_generated_moves(vec![]);
+                                        let piece = board
+                                            .pieces_mut()
+                                            .get_mut(idx)
+                                            .unwrap()
+                                            .as_mut()
+                                            .unwrap();
+                                        piece.increment_moves();
+
+                                        board.make_move(idx, cursor_idx);
+                                        selected_piece = None;
+                                        board.set_generated_moves(vec![]);
+                                    }
                                 }
+                                _ => (),
                             }
-                            _ => (),
-                        },
+                        }
                         None => {
-                            let idx = (cursor_pos.1 * 8 + cursor_pos.0) as usize;
+                            let idx = match side {
+                                Side::White => (cursor_pos.1 * 8 + cursor_pos.0) as usize,
+                                Side::Black => 63 - (cursor_pos.1 * 8 + cursor_pos.0) as usize,
+                            };
 
                             if let Some(ref p) = board.piece_at(idx) {
                                 if p.side() == board.turn() {
-                                    selected_piece =
-                                        Some((cursor_pos.0 as usize, cursor_pos.1 as usize));
+                                    selected_piece = match side {
+                                        Side::White => {
+                                            Some((cursor_pos.0 as usize, cursor_pos.1 as usize))
+                                        }
+                                        Side::Black => {
+                                            let p = 63 - (cursor_pos.1 * 8 + cursor_pos.0) as usize;
+                                            Some((p.x(), p.y()))
+                                        }
+                                    };
 
                                     let moves = board.generate_moves(idx, p);
+
+                                    let moves = match side {
+                                        Side::White => moves,
+                                        Side::Black => moves.iter().map(|x| 63 - x).collect(),
+                                    };
 
                                     board.set_generated_moves(moves);
                                 }

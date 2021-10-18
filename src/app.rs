@@ -1,4 +1,5 @@
 use crate::{
+    chess::Side,
     config::Config,
     game::{Game, GameData, GameState},
     message::Message,
@@ -15,6 +16,20 @@ pub struct OwnInfo {
     id: String,
     username: String,
     online: bool,
+}
+
+impl OwnInfo {
+    pub fn id(&self) -> &String {
+        &self.id
+    }
+
+    pub fn username(&self) -> &String {
+        &self.username
+    }
+
+    pub fn online(&self) -> &bool {
+        &self.online
+    }
 }
 
 pub struct App {
@@ -155,13 +170,21 @@ impl App {
         self.ui_state = state;
     }
 
-    fn set_game(&mut self, game: Game) {
-        self.game = Some(game);
-    }
-
     pub fn start_game(&mut self, game: Game) {
         self.game = Some(game);
         self.ui_state = UIState::Game;
+    }
+
+    pub fn check_own_side(&self) -> Side {
+        let game = self.game().as_ref().unwrap();
+
+        let w = game.data().white();
+
+        if w.id() == self.own_info.id() {
+            return Side::White;
+        }
+
+        return Side::Black;
     }
 }
 
