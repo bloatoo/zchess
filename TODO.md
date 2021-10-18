@@ -6,8 +6,10 @@
 - [x] Config
 - [x] Integrate Lichess API
 - [x] UI states
+- [x] Finish king move generation
 
 - [ ] Check for check
 - [ ] Finish move generation
 - [ ] Resize board dynamically as the terminal size changes
-- [ ] Finish king move generation
+- [ ] Castling
+- [ ] Pinning
