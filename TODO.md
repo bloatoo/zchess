@@ -4,10 +4,10 @@
 - [x] Move generation parsing system
 - [x] King move generation without a stack overflow lol
 - [x] Config
+- [x] Integrate Lichess API
+- [x] UI states
 
 - [ ] Check for check
 - [ ] Finish move generation
-- [ ] Integrate Lichess API
 - [ ] Resize board dynamically as the terminal size changes
 - [ ] Finish king move generation
-- [ ] UI states

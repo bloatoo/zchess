@@ -19,8 +19,8 @@ use crossterm::{
     },
 };
 
-const TILE_WIDTH: usize = 8;
-const TILE_HEIGHT: usize = 4;
+const TILE_WIDTH: usize = 3;
+const TILE_HEIGHT: usize = 2;
 const H_LINE: &str = "─";
 
 pub mod event;

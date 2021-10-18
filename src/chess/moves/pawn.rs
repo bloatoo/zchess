@@ -49,7 +49,7 @@ pub fn generate_pawn_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usize
         for c in mv.constraints.iter() {
             match c {
                 MoveConstraint::MaxMoves(a) => {
-                    if piece.move_count() > &(*a as u32) {
+                    if piece.move_count() > &0 {
                         continue 'moves;
                     }
 
@@ -76,7 +76,7 @@ pub fn generate_pawn_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usize
             continue 'moves;
         }
 
-        if max_constr && (y == 2 || y == -2) {
+        if max_constr {
             if board
                 .piece_at((sq as isize + idx_change) as usize)
                 .is_some()
