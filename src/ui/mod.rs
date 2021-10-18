@@ -133,7 +133,7 @@ pub fn draw_board(
             let idx = match app.check_own_side() {
                 Side::White => i * 8 + j,
                 Side::Black => 63 - (i * 8 + j),
-            };
+            } as usize;
 
             let piece = board.piece_at(idx.into());
 
@@ -152,10 +152,7 @@ pub fn draw_board(
 
             let is_selected_sq = match selected_piece {
                 Some((_, _)) => {
-                    if board
-                        .current_generated_moves()
-                        .contains(&(i * 8 + j).into())
-                    {
+                    if board.current_generated_moves().contains(&idx) {
                         true
                     } else {
                         false
@@ -170,7 +167,7 @@ pub fn draw_board(
             }
 
             if let Some((x, y)) = selected_piece {
-                if x == j as usize && y == i as usize {
+                if x == idx.x() as usize && y == idx.y() as usize {
                     piece_string = format!("{}", piece_string.bold());
                 }
             }
@@ -181,10 +178,7 @@ pub fn draw_board(
                     true => format!("{}", "*".bold()),
                 };
             } else if let Some(_) = selected_piece {
-                if board
-                    .current_generated_moves()
-                    .contains(&(i * 8 + j).into())
-                {
+                if board.current_generated_moves().contains(&idx) {
                     piece_string = format!("{}", "*".with(Color::DarkGrey));
                 }
             }
@@ -270,47 +264,45 @@ pub async fn start(
                 }*/
                 Key::Enter => {
                     let side = app.check_own_side();
+                    let id = app.game().as_ref().unwrap().id().to_string();
+                    let token = app.config().token().to_string();
                     let board = app.game_mut().as_mut().unwrap().board_mut();
 
                     match selected_piece {
                         Some(p) => {
-                            let idx = match side {
-                                Side::White => p.1 * 8 + p.0,
-                                Side::Black => 63 - (p.1 * 8 + p.0),
+                            let idx = p.1 * 8 + p.0;
+
+                            let piece = board.piece_at(idx);
+                            let cursor_idx = match side {
+                                Side::White => (cursor_pos.1 * 8 + cursor_pos.0) as usize,
+                                Side::Black => 63 - ((cursor_pos.1 * 8 + cursor_pos.0) as usize),
                             };
 
-                            match board.piece_at(idx) {
-                                Some(ref piece) => {
-                                    let cursor_idx = match side {
-                                        Side::White => (cursor_pos.1 * 8 + cursor_pos.0) as usize,
-                                        Side::Black => {
-                                            63 - ((cursor_pos.1 * 8 + cursor_pos.0) as usize)
-                                        }
-                                    };
+                            if board /*.generate_moves(idx, &piece)*/
+                                .current_generated_moves()
+                                .contains(&cursor_idx)
+                            {
+                                drop(piece);
 
-                                    if board /*.generate_moves(idx, &piece)*/
-                                        .current_generated_moves()
-                                        .contains(&cursor_idx)
-                                    {
-                                        drop(piece);
+                                let piece =
+                                    board.pieces_mut().get_mut(idx).unwrap().as_mut().unwrap();
+                                piece.increment_moves();
 
-                                        let piece = board
-                                            .pieces_mut()
-                                            .get_mut(idx)
-                                            .unwrap()
-                                            .as_mut()
-                                            .unwrap();
-                                        piece.increment_moves();
+                                board.submit_move(idx, cursor_idx, id, token).await;
+                                selected_piece = None;
+                                board.set_generated_moves(vec![]);
 
-                                        board.make_move(idx, cursor_idx);
-                                        selected_piece = None;
-                                        board.set_generated_moves(vec![]);
-                                    }
-                                }
-                                _ => (),
+                                drop(board);
+
+                                let game = app.game_mut().as_mut().unwrap();
+                                game.incr_move_count();
                             }
                         }
                         None => {
+                            if *board.turn() != side {
+                                continue;
+                            }
+
                             let idx = match side {
                                 Side::White => (cursor_pos.1 * 8 + cursor_pos.0) as usize,
                                 Side::Black => 63 - (cursor_pos.1 * 8 + cursor_pos.0) as usize,
@@ -329,11 +321,6 @@ pub async fn start(
                                     };
 
                                     let moves = board.generate_moves(idx, p);
-
-                                    let moves = match side {
-                                        Side::White => moves,
-                                        Side::Black => moves.iter().map(|x| 63 - x).collect(),
-                                    };
 
                                     board.set_generated_moves(moves);
                                 }

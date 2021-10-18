@@ -1,5 +1,7 @@
 use super::{Piece, PieceKind, Side};
 
+use crate::chess::utils::{idx_to_square, square_to_idx};
+
 use crate::chess::moves::bishop::generate_bishop_moves;
 use crate::chess::moves::king::generate_king_moves;
 use crate::chess::moves::knight::generate_knight_moves;
@@ -70,6 +72,13 @@ impl Board {
         &self.current_generated_moves
     }
 
+    pub fn make_move_str(&mut self, mv: &str) {
+        let (src, dest) = mv.split_at(2);
+        let (src, dest) = (square_to_idx(src), square_to_idx(dest));
+
+        self.make_move(src, dest);
+    }
+
     pub fn from_str(fen: &str, turn: Side) -> Self {
         let mut pieces: Vec<Option<Piece>> = vec![];
 
@@ -120,6 +129,40 @@ impl Board {
             Bishop => generate_bishop_moves(&self, sq, piece),
             Queen => generate_queen_moves(&self, sq, piece),
             King => generate_king_moves(&self, sq, piece),
+        }
+    }
+
+    pub async fn submit_move(
+        &mut self,
+        source: usize,
+        dest: usize,
+        game_id: String,
+        token: String,
+    ) {
+        self.make_move(source, dest);
+        let (src, dest) = (idx_to_square(source), idx_to_square(dest));
+
+        let client = reqwest::Client::new();
+        let url = format!(
+            "https://lichess.org/api/board/game/{}/move/{}{}",
+            game_id, src, dest
+        );
+
+        let token = format!("Bearer {}", token);
+
+        let res = client
+            .post(url)
+            .header("Authorization", token)
+            .send()
+            .await
+            .unwrap()
+            .text()
+            .await
+            .unwrap()
+            .to_string();
+
+        if res.contains("error") {
+            panic!("{}", res);
         }
     }
 

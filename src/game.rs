@@ -94,6 +94,7 @@ impl Player {
 pub struct Game {
     board: Board,
     id: String,
+    move_count: u32,
     data: GameData,
     state: GameState,
 }
@@ -103,6 +104,7 @@ impl Game {
         Self {
             board: Board::default(),
             id: id.to_string(),
+            move_count: 0,
             data,
             state,
         }
@@ -118,6 +120,14 @@ impl Game {
 
     pub fn board_mut(&mut self) -> &mut Board {
         &mut self.board
+    }
+
+    pub fn move_count(&self) -> &u32 {
+        &self.move_count
+    }
+
+    pub fn incr_move_count(&mut self) {
+        self.move_count += 1;
     }
 
     pub fn data(&self) -> &GameData {

@@ -40,3 +40,21 @@ pub fn idx_to_square(idx: usize) -> String {
 
     format!("{}{}", file, row)
 }
+
+pub fn square_to_idx(square: &str) -> usize {
+    let (file, row) = square.split_at(1);
+
+    let file = match file {
+        "a" => 0,
+        "b" => 1,
+        "c" => 2,
+        "d" => 3,
+        "e" => 4,
+        "f" => 5,
+        "g" => 6,
+        "h" => 7,
+        _ => unreachable!(),
+    };
+
+    (row.parse::<usize>().unwrap() - 1) * 8 + file
+}

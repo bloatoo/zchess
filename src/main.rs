@@ -115,6 +115,10 @@ async fn event_loop(rx: Receiver<Message>, app: Arc<Mutex<App>>) {
             Message::GameDataInit(game) => {
                 app.start_game(game);
             }
+
+            Message::GameStateUpdate(state) => {
+                app.update_game_state(state);
+            }
         }
     }
 }

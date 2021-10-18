@@ -1,5 +1,5 @@
 use crate::{
-    chess::Side,
+    chess::{Board, Side},
     config::Config,
     game::{Game, GameData, GameState},
     message::Message,
@@ -102,6 +102,21 @@ impl App {
         });
     }
 
+    pub fn update_game_state(&mut self, state: GameState) {
+        let moves: Vec<&str> = state.moves().split(" ").collect();
+
+        let game = self.game_mut().as_mut().unwrap();
+        let omc = *game.move_count() as usize;
+
+        let mut board = Board::default();
+
+        for mv in moves {
+            board.make_move_str(mv);
+        }
+
+        std::mem::swap(game.board_mut(), &mut board);
+    }
+
     pub fn init_new_game<T: ToString>(&mut self, id: T) {
         let id = id.to_string();
         //self.game = Some(Game::new(Board::default(), id.clone()));
@@ -142,6 +157,12 @@ impl App {
                             let data: GameData = serde_json::from_value(json).unwrap();
                             let game = Game::new(id.clone(), data, state);
                             tx.send(Message::GameDataInit(game)).unwrap();
+                        }
+
+                        "gameState" => {
+                            let state: GameState = serde_json::from_value(json).unwrap();
+
+                            tx.send(Message::GameStateUpdate(state)).unwrap();
                         }
                         _ => (),
                     }
