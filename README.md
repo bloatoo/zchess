@@ -1,2 +1,2 @@
 # chess
-Terminal-based chess
+Chess on the terminal
