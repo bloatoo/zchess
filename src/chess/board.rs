@@ -66,7 +66,6 @@ pub struct Board {
 }
 
 impl Board {
-    // mainly for unit testing
     pub fn current_generated_moves(&self) -> &Vec<usize> {
         &self.current_generated_moves
     }

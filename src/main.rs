@@ -1,5 +1,7 @@
 use chess::{chess::Board, message::Message, ui};
+use reqwest::Client;
 
+use futures::stream::StreamExt;
 use std::sync::mpsc::{self, Receiver};
 
 use std::panic::PanicInfo;
@@ -41,27 +43,34 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let board = Board::default();
     ui::start(board)?;
 
-    /*let (main_tx, main_rx) = mpsc::channel::<Message>();
+    let (main_tx, main_rx) = mpsc::channel::<Message>();
 
     let stream_tx = main_tx.clone();
 
-    tokio::spawn(async move {
-        let client = Client::new();
+    let client = Client::new();
 
+    tokio::spawn(async move {
         let mut main_event_stream = client
             .get("https://lichess.org/api/stream/event")
-            .header("Authorization", "Bearer {token}")
+            .header("Authorization", "Bearer {}")
             .header("Content-Type", "application/x-ndjson")
             .send()
             .await
             .unwrap()
             .bytes_stream();
 
-        while let Some(_ev) = main_event_stream.next().await {}
+        loop {
+            /*let ev = main_event_stream.next().await;
+            match ev {
+                Some(r) => println!("some"),
+                None => println!("none"),
+            };*/
+        }
     });
 
-    event_loop(main_rx)
-    */
+    std::thread::spawn(move || {
+        event_loop(main_rx);
+    });
 
     Ok(())
 }
