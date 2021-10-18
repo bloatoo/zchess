@@ -45,7 +45,6 @@ fn panic_hook(info: &PanicInfo<'_>) {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::panic::set_hook(Box::new(|info| panic_hook(info)));
 
-    let board = Board::default();
     let app = Arc::new(Mutex::new(App::default()));
 
     let (main_tx, main_rx) = mpsc::channel::<Message>();

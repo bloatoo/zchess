@@ -1,4 +1,5 @@
 use crate::chess::Board;
+use crate::config::Config;
 
 pub struct Game {
     board: Board,
@@ -16,16 +17,27 @@ impl Game {
 
 pub struct App {
     game: Option<Game>,
+    config: Config,
 }
 
 impl App {
     pub fn new(game: Game) -> Self {
-        Self { game: Some(game) }
+        Self {
+            game: Some(game),
+            config: Config::new().unwrap(),
+        }
+    }
+
+    pub fn config(&self) -> &Config {
+        &self.config
     }
 }
 
 impl Default for App {
     fn default() -> Self {
-        Self { game: None }
+        Self {
+            game: None,
+            config: Config::new().unwrap(),
+        }
     }
 }
