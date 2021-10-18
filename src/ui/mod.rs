@@ -52,14 +52,14 @@ pub fn draw_board(
         Print(&format!("{}", H_LINE.repeat(TILE_WIDTH * 8 + 8 + 1))),
     )?;
 
-    /*for i in 1..=8 {
+    for i in 1..=8 {
         execute!(
             stdout,
-            cursor::MoveTo(center - 3, 2 * i),
-            Print(i),
+            cursor::MoveTo(center - 3, TILE_HEIGHT as u16 * i - 2),
+            Print(9 - i),
             cursor::MoveTo(center - 1, 0),
         )?;
-    }*/
+    }
     // print
     for _ in 0..8 {
         // print tile's vertical lines
@@ -80,6 +80,17 @@ pub fn draw_board(
                 "{}",
                 H_LINE.repeat(TILE_WIDTH as usize * 8 + 8 + 1)
             )),
+        )?;
+    }
+
+    for (idx, c) in "abcdefgh".split("").enumerate() {
+        queue!(
+            stdout,
+            cursor::MoveTo(
+                center + (TILE_WIDTH as u16 + 1) * idx as u16 - TILE_WIDTH as u16 / 2 - 1,
+                TILE_HEIGHT as u16 * 8 + 1
+            ),
+            Print(c)
         )?;
     }
 

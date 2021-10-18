@@ -83,6 +83,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                         stream_tx.send(Message::GameStart(game_id.into())).unwrap();
                     }
+
+                    "gameEnd" => {}
                     _ => (),
                 }
             }
