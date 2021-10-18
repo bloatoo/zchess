@@ -1,4 +1,4 @@
-use super::utils::calculate_squares_to_edge;
+use crate::chess::utils::calculate_squares_to_edge;
 use crate::chess::{board::Edge, Board, Move, MoveConstraint, Piece, Side};
 use std::cmp::Ordering;
 

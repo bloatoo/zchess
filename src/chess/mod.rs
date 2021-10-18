@@ -5,3 +5,4 @@ pub mod piece;
 pub use piece::{Piece, PieceKind, Side};
 
 pub mod moves;
+pub mod utils;
