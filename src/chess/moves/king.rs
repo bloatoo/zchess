@@ -1,4 +1,4 @@
-use crate::chess::{board::Edge, Board, Move, Piece, Side, Square};
+use crate::chess::{board::Edge, Board, Move, Piece, PieceKind, Side, Square};
 use lazy_static::lazy_static;
 
 lazy_static! {
@@ -62,12 +62,20 @@ pub fn generate_king_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usize
 
         for (idx, psq) in board.pieces().iter().enumerate() {
             if let Some(ref p) = psq {
-                if !(p.side() == board.turn() && p.kind() == piece.kind()) {
+                if !(p.side() == board.turn() && p.kind() == &PieceKind::King)
+                    && !(p.side() == piece.side() && p.kind() == piece.kind())
+                {
                     if board.generate_moves(idx, p).contains(&final_sq) && p.side() != piece.side()
                     {
                         continue 'moves;
                     }
                 }
+            }
+        }
+
+        if let Some(ref p) = board.piece_at(final_sq) {
+            if p.side() == piece.side() {
+                continue 'moves;
             }
         }
 
