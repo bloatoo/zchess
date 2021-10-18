@@ -1,6 +1,9 @@
-use crate::{chess::Board, message::Message, ui::event::*};
-use std::io::Stdout;
-use std::io::Write;
+use crate::{app::App, chess::Board, message::Message, ui::event::*};
+
+use std::io::{Stdout, Write};
+use std::sync::mpsc::Sender;
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 use crossterm::{
     cursor, execute, queue,
@@ -131,7 +134,10 @@ pub fn draw_board(
     Ok(())
 }
 
-pub fn start(mut board: Board) -> Result<(), Box<dyn std::error::Error>> {
+pub fn start(
+    app: Arc<Mutex<App>>,
+    main_tx: Sender<Message>,
+) -> Result<(), Box<dyn std::error::Error>> {
     let events = Events::new(1024);
 
     let mut stdout = std::io::stdout();
@@ -142,7 +148,7 @@ pub fn start(mut board: Board) -> Result<(), Box<dyn std::error::Error>> {
     let mut selected_piece: Option<(usize, usize)> = None;
 
     loop {
-        draw_board(&board, cursor_pos, selected_piece, &mut stdout)?;
+        //draw_board(&board, cursor_pos, selected_piece, &mut stdout)?;
 
         stdout.flush()?;
 
@@ -174,7 +180,7 @@ pub fn start(mut board: Board) -> Result<(), Box<dyn std::error::Error>> {
                     selected_piece = None;
                 }
 
-                Key::Enter => match selected_piece {
+                /*Key::Enter => match selected_piece {
                     Some(p) => match board.piece_at(p.1 * 8 + p.0) {
                         Some(ref piece) => {
                             let idx = p.1 * 8 + p.0;
@@ -209,7 +215,7 @@ pub fn start(mut board: Board) -> Result<(), Box<dyn std::error::Error>> {
                             }
                         }
                     }
-                },
+                },*/
                 _ => (),
             }
         }

@@ -9,3 +9,5 @@
 - [ ] Integrate Lichess API
 - [ ] Resize board dynamically as the terminal size changes
 - [ ] Finish king move generation
+- [ ] UI states
+- [ ] Config

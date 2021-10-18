@@ -1,7 +1,10 @@
-use chess::{chess::Board, message::Message, ui};
+use chess::{app::App, chess::Board, message::Message, ui};
 use reqwest::Client;
 use serde_json::Value;
 use std::time::Duration;
+
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 use futures::stream::StreamExt;
 use std::sync::mpsc::{self, Receiver};
@@ -43,7 +46,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::panic::set_hook(Box::new(|info| panic_hook(info)));
 
     let board = Board::default();
-    //ui::start(board)?;
+    let app = Arc::new(Mutex::new(App::default()));
 
     let (main_tx, main_rx) = mpsc::channel::<Message>();
 
@@ -53,7 +56,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut main_event_stream = client
         .get("https://lichess.org/api/stream/event")
-        .header("Authorization", "Bearer")
+        .header("Authorization", "Bearer ")
         .header("Content-Type", "application/x-ndjson")
         .send()
         .await
@@ -65,8 +68,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let ev = main_event_stream.next().await.unwrap().unwrap();
             let ev_string = String::from_utf8(ev.to_vec()).unwrap();
 
-            if ev_string != "\n" {
-                let json: Value = serde_json::from_str(&ev_string).unwrap();
+            if ev_string.len() > 1 {
+                let json: Value =
+                    serde_json::from_str(&ev_string).unwrap_or_else(|_| panic!("{}", ev_string));
 
                 match json["type"].as_str().unwrap() {
                     "gameStart" => {}
@@ -79,6 +83,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::thread::spawn(move || {
         event_loop(main_rx);
     });
+
+    ui::start(app, main_tx)?;
 
     Ok(())
 }
