@@ -46,7 +46,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let (main_tx, main_rx) = mpsc::channel::<Message>();
 
-    let app = App::new(main_tx.clone());
+    let app = App::new(main_tx.clone()).await.unwrap();
 
     let stream_tx = main_tx.clone();
 

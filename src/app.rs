@@ -6,24 +6,49 @@ use crate::{
 };
 
 use futures::stream::StreamExt;
+use serde::Deserialize;
 use serde_json::Value;
 use std::sync::mpsc::Sender;
 
+#[derive(Deserialize, Debug, Clone)]
+pub struct OwnInfo {
+    id: String,
+    username: String,
+    online: bool,
+}
+
 pub struct App {
     game: Option<Game>,
+    own_info: OwnInfo,
     config: Config,
     main_tx: Sender<Message>,
     ui_state: UIState,
 }
 
 impl App {
-    pub fn new(main_tx: Sender<Message>) -> Self {
-        Self {
+    pub async fn new(main_tx: Sender<Message>) -> Result<Self, Box<dyn std::error::Error>> {
+        let client = reqwest::Client::new();
+
+        let config = Config::new().unwrap();
+
+        let token = format!("Bearer {}", config.token());
+
+        let res = client
+            .get("https://lichess.org/api/account")
+            .header("Authorization", token)
+            .send()
+            .await?
+            .text()
+            .await?
+            .to_string();
+
+        Ok(Self {
             game: None,
             main_tx,
-            config: Config::new().unwrap(),
+            config,
+            own_info: serde_json::from_str(&res).unwrap(),
             ui_state: UIState::Menu,
-        }
+        })
     }
 
     pub fn config(&self) -> &Config {
