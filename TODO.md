@@ -15,3 +15,6 @@
 - [ ] Pinning
 - [ ] Documentation
 - [ ] Menu UI
+- [ ] Highlight last moved piece
+- [ ] Premoves?
+- [ ] Time left for each player
