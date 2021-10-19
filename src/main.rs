@@ -110,14 +110,17 @@ async fn event_loop(rx: Receiver<Message>, app: Arc<Mutex<App>>) {
         match ev {
             Message::GameStart(id) => {
                 app.init_new_game(id);
+                app.state_changed = true;
             }
 
             Message::GameDataInit(game) => {
                 app.start_game(game);
+                app.state_changed = true;
             }
 
             Message::GameStateUpdate(state) => {
                 app.update_game_state(state);
+                app.state_changed = true;
             }
         }
     }

@@ -38,6 +38,7 @@ pub struct App {
     config: Config,
     main_tx: Sender<Message>,
     ui_state: UIState,
+    pub state_changed: bool,
 }
 
 impl App {
@@ -61,6 +62,7 @@ impl App {
             game: None,
             main_tx,
             config,
+            state_changed: true,
             own_info: serde_json::from_str(&res).unwrap(),
             ui_state: UIState::Menu,
         })

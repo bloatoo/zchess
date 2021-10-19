@@ -252,7 +252,10 @@ pub async fn start(
 
         match app.ui_state() {
             UIState::Game => {
-                draw_board(&app, cursor_pos, selected_piece, &mut stdout)?;
+                if app.state_changed {
+                    draw_board(&app, cursor_pos, selected_piece, &mut stdout)?;
+                    app.state_changed = false;
+                }
             }
 
             &UIState::Menu => {
@@ -266,6 +269,7 @@ pub async fn start(
         stdout.flush()?;
 
         if let Ok(Event::Input(k)) = events.next() {
+            app.state_changed = true;
             match k {
                 Key::Ctrl('s') => {
                     app.seek_for_game().await;
