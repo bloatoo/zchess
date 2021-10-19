@@ -1,6 +1,5 @@
 use crate::chess::utils::calculate_squares_to_edge;
 use crate::chess::{board::Edge, Board, Move, Piece, Side};
-use lazy_static::lazy_static;
 use std::cmp::Ordering;
 
 pub const KNIGHT_MOVES: &[Move] = &[

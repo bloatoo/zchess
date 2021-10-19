@@ -1,5 +1,4 @@
 use crate::chess::{board::Edge, Board, Move, Piece, Side, Square};
-use lazy_static::lazy_static;
 use std::cmp::Ordering;
 
 pub const BISHOP_MOVES: &[Move] = &[
