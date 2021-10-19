@@ -19,8 +19,8 @@ use crossterm::{
     },
 };
 
-const TILE_WIDTH: usize = 8;
-const TILE_HEIGHT: usize = 4;
+const TILE_WIDTH: usize = 3;
+const TILE_HEIGHT: usize = 2;
 const H_LINE: &str = "─";
 
 pub mod event;
@@ -154,7 +154,12 @@ pub fn draw_board(
 
             piece_string = match piece {
                 Some(ref p) => {
-                    if TILE_WIDTH > 4 {
+                    if let Some(r) = app.config().piece_render(p.kind()) {
+                        match p.side() {
+                            Side::White => r.render_white().clone(),
+                            Side::Black => r.render_black().clone(),
+                        }
+                    } else if TILE_WIDTH > 4 {
                         p.render(TILE_WIDTH).to_string()
                     } else {
                         p.render_2c().to_string()
