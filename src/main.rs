@@ -50,20 +50,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let stream_tx = main_tx.clone();
 
-    let client = Client::new();
-
     let token = format!("Bearer {}", app.config().token());
 
-    let mut main_event_stream = client
-        .get("https://lichess.org/api/stream/event")
-        .header("Authorization", token)
-        .header("Content-Type", "application/x-ndjson")
-        .send()
-        .await
-        .unwrap()
-        .bytes_stream();
-
     tokio::spawn(async move {
+        let client = Client::new();
+
+        let mut main_event_stream = client
+            .get("https://lichess.org/api/stream/event")
+            .header("Authorization", token)
+            .header("Content-Type", "application/x-ndjson")
+            .send()
+            .await
+            .unwrap()
+            .bytes_stream();
+
         loop {
             let ev = main_event_stream.next().await.unwrap().unwrap();
             let ev_string = String::from_utf8(ev.to_vec()).unwrap();
