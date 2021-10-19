@@ -7,14 +7,15 @@
 - [x] Integrate Lichess API
 - [x] UI states
 - [x] Finish king move generation
+- [x] Castling
+- [x] Finish move generation
 
 - [ ] Check for check
-- [ ] Finish move generation
 - [ ] Resize board dynamically as the terminal size changes
-- [ ] Castling
 - [ ] Pinning
 - [ ] Documentation
 - [ ] Menu UI
 - [ ] Highlight last moved piece
 - [ ] Premoves?
 - [ ] Time left for each player
+- [ ] Lichess chat
