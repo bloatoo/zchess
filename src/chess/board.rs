@@ -67,6 +67,7 @@ pub struct Board {
     turn: Side,
     current_generated_moves: Vec<usize>,
     previous_move: Option<(usize, usize)>,
+    moves: Vec<String>,
 }
 
 impl Board {
@@ -119,6 +120,7 @@ impl Board {
             en_passant: None,
             previous_move: None,
             current_generated_moves: vec![],
+            moves: vec![],
         }
     }
 
@@ -133,6 +135,10 @@ impl Board {
             Queen => generate_queen_moves(&self, sq, piece),
             King => generate_king_moves(&self, sq, piece),
         }
+    }
+
+    pub fn moves(&self) -> &Vec<String> {
+        &self.moves
     }
 
     pub async fn submit_move(
@@ -171,6 +177,10 @@ impl Board {
 
     pub fn make_move(&mut self, source: usize, dest: usize) {
         let piece = self.piece_at(source).clone().unwrap();
+
+        let (src_str, dest_str) = (idx_to_square(source), idx_to_square(dest));
+
+        self.moves.push(format!("{}{}", src_str, dest_str));
 
         if piece.kind() == &PieceKind::King {
             let idx = dest as isize - source as isize;

@@ -95,7 +95,7 @@ pub fn draw_board(
         execute!(
             stdout,
             cursor::MoveTo(center - 3, TILE_HEIGHT as u16 * i - TILE_HEIGHT as u16 / 2),
-            Print(9 - i),
+            Print(format!("{}", (9 - i).to_string().with(Color::DarkGrey))),
             cursor::MoveTo(center - 1, 0),
         )?;
     }
@@ -131,7 +131,17 @@ pub fn draw_board(
                     - 1,
                 TILE_HEIGHT as u16 * 8 + 1
             ),
-            Print(c)
+            Print(format!("{}", c.with(Color::DarkGrey)))
+        )?;
+    }
+
+    let center_y = size.1 / 2 - board.moves().len() as u16 / 2;
+
+    for (idx, mv) in board.moves().iter().enumerate() {
+        execute!(
+            stdout,
+            cursor::MoveTo((size.0 / 5) * 4, center_y + idx as u16),
+            Print(mv),
         )?;
     }
 
@@ -167,6 +177,12 @@ pub fn draw_board(
                 }
                 None => "".into(),
             };
+
+            if let Some(ref p) = piece {
+                if p.side() == &app.check_own_side() {
+                    piece_string = format!("{}", piece_string.with(Color::Cyan));
+                }
+            }
 
             let is_selected_sq = match selected_piece {
                 Some((_, _)) => {
