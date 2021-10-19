@@ -74,8 +74,8 @@ pub fn draw_board(
         "id: {} | {} | {}+{}",
         game.id(),
         names,
-        clock.initial(),
-        clock.increment()
+        clock.initial() / 1000 / 60,
+        clock.increment() / 1000
     );
 
     // print top vertical line
