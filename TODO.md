@@ -10,12 +10,12 @@
 - [x] Castling
 - [x] Finish move generation
 - [x] Menu UI
+- [x] Highlight previous move
 
 - [ ] Check for check
 - [ ] Resize board dynamically as the terminal size changes
 - [ ] Pinning
 - [ ] Documentation
-- [ ] Highlight last moved piece
 - [ ] Premoves?
 - [ ] Time left for each player
 - [ ] Lichess chat
