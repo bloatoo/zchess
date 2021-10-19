@@ -66,6 +66,7 @@ pub struct Board {
     en_passant: Option<usize>,
     turn: Side,
     current_generated_moves: Vec<usize>,
+    previous_move: Option<(usize, usize)>,
 }
 
 impl Board {
@@ -116,6 +117,7 @@ impl Board {
             pieces,
             turn,
             en_passant: None,
+            previous_move: None,
             current_generated_moves: vec![],
         }
     }
@@ -200,6 +202,8 @@ impl Board {
             Side::White => Side::Black,
             Side::Black => Side::White,
         };
+
+        self.previous_move = Some((source, dest));
     }
 
     pub fn castle(&mut self, side: Side, long: bool) {
@@ -243,6 +247,12 @@ impl Board {
             Side::White => Side::Black,
             Side::Black => Side::White,
         };
+
+        self.previous_move = Some((king_idx, dest_squares.0));
+    }
+
+    pub fn previous_move(&self) -> &Option<(usize, usize)> {
+        &self.previous_move
     }
 
     fn set_piece(&mut self, dest: usize, piece: Option<Piece>) {

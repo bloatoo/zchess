@@ -201,6 +201,14 @@ pub fn draw_board(
                 }
             }
 
+            if let Some((src, dest)) = board.previous_move() {
+                if *src == idx {
+                    piece_string += &format!("{}", "*".with(Color::Blue).bold());
+                } else if *dest == idx {
+                    piece_string += &format!("{}", "*".with(Color::Yellow).bold());
+                }
+            }
+
             execute!(
                 stdout,
                 cursor::MoveToColumn(center + 1 + (TILE_WIDTH as u16 + 1) * j as u16),
