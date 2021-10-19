@@ -3,50 +3,48 @@ use crate::chess::{board::Edge, Board, Move, Piece, Side};
 use lazy_static::lazy_static;
 use std::cmp::Ordering;
 
-lazy_static! {
-    pub static ref KNIGHT_MOVES: Vec<Move> = vec![
-        Move {
-            x: 1,
-            y: 2,
-            constraints: Vec::new(),
-        },
-        Move {
-            x: -1,
-            y: 2,
-            constraints: Vec::new(),
-        },
-        Move {
-            x: 2,
-            y: 1,
-            constraints: Vec::new(),
-        },
-        Move {
-            x: -2,
-            y: 1,
-            constraints: Vec::new(),
-        },
-        Move {
-            x: 2,
-            y: -1,
-            constraints: Vec::new(),
-        },
-        Move {
-            x: -2,
-            y: -1,
-            constraints: Vec::new(),
-        },
-        Move {
-            x: 1,
-            y: -2,
-            constraints: Vec::new(),
-        },
-        Move {
-            x: -1,
-            y: -2,
-            constraints: Vec::new(),
-        },
-    ];
-}
+pub const KNIGHT_MOVES: &[Move] = &[
+    Move {
+        x: 1,
+        y: 2,
+        constraints: &[],
+    },
+    Move {
+        x: -1,
+        y: 2,
+        constraints: &[],
+    },
+    Move {
+        x: 2,
+        y: 1,
+        constraints: &[],
+    },
+    Move {
+        x: -2,
+        y: 1,
+        constraints: &[],
+    },
+    Move {
+        x: 2,
+        y: -1,
+        constraints: &[],
+    },
+    Move {
+        x: -2,
+        y: -1,
+        constraints: &[],
+    },
+    Move {
+        x: 1,
+        y: -2,
+        constraints: &[],
+    },
+    Move {
+        x: -1,
+        y: -2,
+        constraints: &[],
+    },
+];
 
 pub fn generate_knight_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usize> {
     let mut moves = vec![];

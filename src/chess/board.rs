@@ -44,13 +44,13 @@ pub enum Edge {
     Bottom,
 }
 
-pub struct Move {
+pub struct Move<'a> {
     pub x: isize,
     pub y: isize,
-    pub constraints: Vec<MoveConstraint>,
+    pub constraints: &'a [MoveConstraint],
 }
 
-impl Move {
+impl<'a> Move<'a> {
     pub fn invert_coordinates(&self) -> Self {
         Self {
             x: -self.x,

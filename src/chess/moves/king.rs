@@ -1,60 +1,57 @@
 use crate::chess::{board::Edge, Board, Move, MoveConstraint, Piece, PieceKind, Side, Square};
-use lazy_static::lazy_static;
 
-lazy_static! {
-    pub static ref KING_MOVES: Vec<Move> = vec![
-        Move {
-            x: 1,
-            y: 0,
-            constraints: Vec::new(),
-        },
-        Move {
-            x: 2,
-            y: 0,
-            constraints: vec![MoveConstraint::Castling],
-        },
-        Move {
-            x: -2,
-            y: 0,
-            constraints: vec![MoveConstraint::Castling],
-        },
-        Move {
-            x: 1,
-            y: 1,
-            constraints: Vec::new(),
-        },
-        Move {
-            x: 0,
-            y: 1,
-            constraints: Vec::new(),
-        },
-        Move {
-            x: -1,
-            y: 1,
-            constraints: Vec::new(),
-        },
-        Move {
-            x: -1,
-            y: 0,
-            constraints: Vec::new(),
-        },
-        Move {
-            x: 0,
-            y: -1,
-            constraints: Vec::new(),
-        },
-        Move {
-            x: -1,
-            y: -1,
-            constraints: Vec::new(),
-        },
-        Move {
-            x: -1,
-            y: 1,
-            constraints: Vec::new(),
-        },
-    ];
-}
+pub const KING_MOVES: &[Move] = &[
+    Move {
+        x: 1,
+        y: 0,
+        constraints: &[],
+    },
+    Move {
+        x: 2,
+        y: 0,
+        constraints: &[MoveConstraint::Castling],
+    },
+    Move {
+        x: -2,
+        y: 0,
+        constraints: &[MoveConstraint::Castling],
+    },
+    Move {
+        x: 1,
+        y: 1,
+        constraints: &[],
+    },
+    Move {
+        x: 0,
+        y: 1,
+        constraints: &[],
+    },
+    Move {
+        x: -1,
+        y: 1,
+        constraints: &[],
+    },
+    Move {
+        x: -1,
+        y: 0,
+        constraints: &[],
+    },
+    Move {
+        x: 0,
+        y: -1,
+        constraints: &[],
+    },
+    Move {
+        x: -1,
+        y: -1,
+        constraints: &[],
+    },
+    Move {
+        x: -1,
+        y: 1,
+        constraints: &[],
+    },
+];
 
 pub fn generate_king_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usize> {
     let mut moves = vec![];
