@@ -1,4 +1,4 @@
-use crate::chess::{board::Edge, Board, Move, Piece, PieceKind, Side, Square};
+use crate::chess::{board::Edge, Board, Move, MoveConstraint, Piece, PieceKind, Side, Square};
 use lazy_static::lazy_static;
 
 lazy_static! {
@@ -7,6 +7,16 @@ lazy_static! {
             x: 1,
             y: 0,
             constraints: Vec::new(),
+        },
+        Move {
+            x: 2,
+            y: 0,
+            constraints: vec![MoveConstraint::Castling],
+        },
+        Move {
+            x: -2,
+            y: 0,
+            constraints: vec![MoveConstraint::Castling],
         },
         Move {
             x: 1,

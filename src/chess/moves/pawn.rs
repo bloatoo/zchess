@@ -1,5 +1,5 @@
 use crate::chess::utils::calculate_squares_to_edge;
-use crate::chess::{board::Edge, Board, Move, MoveConstraint, Piece, Side};
+use crate::chess::{board::Edge, Board, Move, MoveConstraint, Piece, Side, Square};
 use std::cmp::Ordering;
 
 use lazy_static::lazy_static;
@@ -48,11 +48,19 @@ pub fn generate_pawn_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usize
 
         for c in mv.constraints.iter() {
             match c {
-                MoveConstraint::MaxMoves(a) => {
-                    if piece.move_count() > &0 {
-                        continue 'moves;
+                MoveConstraint::MaxMoves(_) => {
+                    match piece.side() {
+                        Side::White => {
+                            if sq.y() != 1 {
+                                continue 'moves;
+                            }
+                        }
+                        Side::Black => {
+                            if sq.y() != 6 {
+                                continue 'moves;
+                            }
+                        }
                     }
-
                     max_constr = true;
                 }
 
@@ -63,6 +71,7 @@ pub fn generate_pawn_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usize
 
                     move_constr = true;
                 }
+                _ => (),
             }
         }
 

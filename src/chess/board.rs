@@ -32,6 +32,7 @@ impl Square for usize {
 #[derive(Debug, Clone)]
 pub enum MoveConstraint {
     MaxMoves(usize),
+    Castling,
     PieceOnTargetSquare,
 }
 
@@ -168,8 +169,75 @@ impl Board {
 
     pub fn make_move(&mut self, source: usize, dest: usize) {
         let piece = self.piece_at(source).clone().unwrap();
+
+        if piece.kind() == &PieceKind::King {
+            let idx = dest as isize - source as isize;
+
+            if idx == 2 || idx == -2 {
+                /*let long = if idx == 2 {
+                    match piece.side() {
+                        Side::White => false,
+                        Side::Black => true,
+                    }
+                } else {
+                    match piece.side() {
+                        Side::White => false,
+                        Side::Black => true,
+                    }
+                };*/
+
+                let long = idx < 2;
+
+                self.castle(piece.side().clone(), long);
+                return;
+            }
+        }
+
         self.set_piece(dest, Some(piece));
         self.set_piece(source, None);
+
+        self.turn = match self.turn {
+            Side::White => Side::Black,
+            Side::Black => Side::White,
+        };
+    }
+
+    pub fn castle(&mut self, side: Side, long: bool) {
+        let king_idx = match side {
+            Side::White => 4,
+            Side::Black => 60,
+        };
+
+        let rook_idx = match side {
+            Side::Black => match long {
+                true => 56,
+                false => 63,
+            },
+            Side::White => match long {
+                true => 0,
+                false => 7,
+            },
+        };
+
+        let dest_squares: (usize, usize) = match side {
+            Side::White => match long {
+                true => (2, 3),
+                false => (6, 5),
+            },
+            Side::Black => match long {
+                true => (58, 59),
+                false => (62, 61),
+            },
+        };
+
+        let king = self.piece_at(king_idx).clone().unwrap();
+        let rook = self.piece_at(rook_idx).clone().unwrap();
+
+        self.set_piece(dest_squares.0, Some(king));
+        self.set_piece(king_idx, None);
+
+        self.set_piece(dest_squares.1, Some(rook));
+        self.set_piece(rook_idx, None);
 
         self.turn = match self.turn {
             Side::White => Side::Black,
