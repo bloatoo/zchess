@@ -9,12 +9,12 @@
 - [x] Finish king move generation
 - [x] Castling
 - [x] Finish move generation
+- [x] Menu UI
 
 - [ ] Check for check
 - [ ] Resize board dynamically as the terminal size changes
 - [ ] Pinning
 - [ ] Documentation
-- [ ] Menu UI
 - [ ] Highlight last moved piece
 - [ ] Premoves?
 - [ ] Time left for each player
