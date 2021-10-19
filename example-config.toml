@@ -1,23 +1,26 @@
 # lichess api token
 token = ""
 
-# unicode chess pieces
+[pieces.king]
+render_black = "♔"
+render_white = "♚"
 
-# white king 	♔
-# white queen 	♕
-# white rook 	♖
-# white bishop 	♗
-# white knight 	♘
-# white pawn 	♙
-# black king 	♚
-# black queen 	♛
-# black rook 	♜
-# black bishop 	♝
-# black knight 	♞
-# black pawn 	♟︎
+[pieces.queen]
+render_black = "♕"
+render_white = "♛"
 
-# colors are flipped around in the terminal for dark theme users (like me of course)
+[pieces.rook]
+render_black = "♖"
+render_white = "♜"
+
+[pieces.bishop]
+render_black = "♗"
+render_white = "♝"
+
+[pieces.knight]
+render_black = "♘"
+render_white = "♞"
 
 [pieces.pawn]
-render_black = "nice"
-render_white = "sheesh"
+render_black = "♙"
+render_white = "p"
