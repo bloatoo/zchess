@@ -19,8 +19,8 @@ use crossterm::{
     },
 };
 
-const TILE_WIDTH: usize = 3;
-const TILE_HEIGHT: usize = 2;
+const TILE_WIDTH: usize = 8;
+const TILE_HEIGHT: usize = 4;
 const H_LINE: &str = "─";
 
 pub mod event;
@@ -252,14 +252,19 @@ pub async fn start(
     let mut cursor_pos = (0, 0);
     let mut selected_piece: Option<(usize, usize)> = None;
 
+    let mut size = terminal::size().unwrap();
+
     loop {
         let mut app = app.lock().await;
 
         match app.ui_state() {
             UIState::Game => {
-                if app.state_changed {
+                let curr_size = terminal::size().unwrap();
+
+                if app.state_changed || curr_size != size {
                     draw_board(&app, cursor_pos, selected_piece, &mut stdout)?;
                     app.state_changed = false;
+                    size = curr_size;
                 }
             }
 
