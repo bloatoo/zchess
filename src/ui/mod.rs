@@ -11,7 +11,7 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 
 use crossterm::{
-    cursor, execute, queue,
+    cursor, execute,
     style::{Color, Print, Stylize},
     terminal::{
         self, disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen,
@@ -27,7 +27,20 @@ pub mod event;
 
 pub enum UIState {
     Menu,
+    Seek,
     Game,
+}
+
+pub fn draw_seek(stdout: &mut Stdout) -> Result<(), Box<dyn std::error::Error>> {
+    let string = "Seeking for a new game...";
+
+    let size = terminal::size().unwrap();
+
+    let center_x = size.0 / 2 - string.len() as u16 / 2;
+    let center_y = size.1 / 2;
+
+    execute!(stdout, cursor::MoveTo(center_x, center_y), Print(string))?;
+    Ok(())
 }
 
 pub fn draw_board(
@@ -68,7 +81,7 @@ pub fn draw_board(
     // print top vertical line
     let (_, y) = terminal::size().unwrap();
 
-    queue!(
+    execute!(
         stdout,
         Clear(ClearType::All),
         cursor::MoveTo(0, y),
@@ -90,7 +103,7 @@ pub fn draw_board(
     for _ in 0..8 {
         // print tile's vertical lines
         for _ in 0..TILE_HEIGHT {
-            queue!(
+            execute!(
                 stdout,
                 cursor::MoveToNextLine(1),
                 cursor::MoveToColumn(center),
@@ -99,7 +112,7 @@ pub fn draw_board(
         }
 
         // print horizontal line
-        queue!(
+        execute!(
             stdout,
             cursor::MoveToColumn(center),
             Print(&format!(
@@ -110,7 +123,7 @@ pub fn draw_board(
     }
 
     for (idx, c) in "abcdefgh".split("").enumerate() {
-        queue!(
+        execute!(
             stdout,
             cursor::MoveTo(
                 center + (TILE_WIDTH as u16 + 1) * idx as u16
@@ -124,7 +137,7 @@ pub fn draw_board(
 
     // render pieces
     for i in (0..8).rev() {
-        queue!(
+        execute!(
             stdout,
             cursor::MoveTo(center, (TILE_HEIGHT as u16 * (7 - i)) + 1)
         )?;
@@ -183,7 +196,7 @@ pub fn draw_board(
                 }
             }
 
-            queue!(
+            execute!(
                 stdout,
                 cursor::MoveToColumn(center + 1 + (TILE_WIDTH as u16 + 1) * j as u16),
                 Print(piece_string),
@@ -191,6 +204,33 @@ pub fn draw_board(
         }
     }
 
+    Ok(())
+}
+
+pub fn draw_menu(
+    stdout: &mut Stdout,
+    cursor_pos: (u16, u16),
+) -> Result<(), Box<dyn std::error::Error>> {
+    let menu_items = vec!["New Lichess game"];
+
+    let size = terminal::size().unwrap();
+
+    for (idx, i) in menu_items.iter().enumerate() {
+        let center_x = size.0 / 2 - i.len() as u16 / 2;
+        let center_y = size.1 / 2 + idx as u16;
+
+        let mut final_string: String = i.to_string();
+
+        if cursor_pos.1 == idx as u16 {
+            final_string = format!("{}", final_string.bold());
+        }
+
+        execute!(
+            stdout,
+            cursor::MoveTo(center_x, center_y),
+            Print(final_string)
+        )?;
+    }
     Ok(())
 }
 
@@ -216,13 +256,10 @@ pub async fn start(
             }
 
             &UIState::Menu => {
-                /*app.start_new_game("123");
-                draw_board(
-                    app.game().as_ref().unwrap(),
-                    cursor_pos,
-                    selected_piece,
-                    &mut stdout,
-                )?;*/
+                draw_menu(&mut stdout, cursor_pos)?;
+            }
+            UIState::Seek => {
+                draw_seek(&mut stdout)?;
             }
         }
 
@@ -263,66 +300,89 @@ pub async fn start(
                     app.start_new_game("abc");
                 }*/
                 Key::Enter => {
-                    let side = app.check_own_side();
-                    let id = app.game().as_ref().unwrap().id().to_string();
-                    let token = app.config().token().to_string();
-                    let board = app.game_mut().as_mut().unwrap().board_mut();
-
-                    match selected_piece {
-                        Some(p) => {
-                            let idx = p.1 * 8 + p.0;
-
-                            let piece = board.piece_at(idx);
-                            let cursor_idx = match side {
-                                Side::White => (cursor_pos.1 * 8 + cursor_pos.0) as usize,
-                                Side::Black => 63 - ((cursor_pos.1 * 8 + cursor_pos.0) as usize),
-                            };
-
-                            if board /*.generate_moves(idx, &piece)*/
-                                .current_generated_moves()
-                                .contains(&cursor_idx)
-                            {
-                                drop(piece);
-
-                                let piece =
-                                    board.pieces_mut().get_mut(idx).unwrap().as_mut().unwrap();
-                                piece.increment_moves();
-
-                                board.submit_move(idx, cursor_idx, id, token).await;
-                                selected_piece = None;
-                                board.set_generated_moves(vec![]);
-
-                                drop(board);
-
-                                let game = app.game_mut().as_mut().unwrap();
-                                game.incr_move_count();
+                    match app.ui_state() {
+                        UIState::Menu => {
+                            if cursor_pos.1 == 0 {
+                                app.seek_for_game().await;
                             }
                         }
-                        None => {
-                            if *board.turn() != side {
-                                continue;
-                            }
 
-                            let idx = match side {
-                                Side::White => (cursor_pos.1 * 8 + cursor_pos.0) as usize,
-                                Side::Black => 63 - (cursor_pos.1 * 8 + cursor_pos.0) as usize,
-                            };
+                        UIState::Seek => {}
 
-                            if let Some(ref p) = board.piece_at(idx) {
-                                if p.side() == board.turn() {
-                                    selected_piece = match side {
-                                        Side::White => {
-                                            Some((cursor_pos.0 as usize, cursor_pos.1 as usize))
-                                        }
+                        UIState::Game => {
+                            let side = app.check_own_side();
+                            let id = app.game().as_ref().unwrap().id().to_string();
+                            let token = app.config().token().to_string();
+                            let board = app.game_mut().as_mut().unwrap().board_mut();
+
+                            match selected_piece {
+                                Some(p) => {
+                                    let idx = p.1 * 8 + p.0;
+
+                                    let piece = board.piece_at(idx);
+                                    let cursor_idx = match side {
+                                        Side::White => (cursor_pos.1 * 8 + cursor_pos.0) as usize,
                                         Side::Black => {
-                                            let p = 63 - (cursor_pos.1 * 8 + cursor_pos.0) as usize;
-                                            Some((p.x(), p.y()))
+                                            63 - ((cursor_pos.1 * 8 + cursor_pos.0) as usize)
                                         }
                                     };
 
-                                    let moves = board.generate_moves(idx, p);
+                                    if board /*.generate_moves(idx, &piece)*/
+                                        .current_generated_moves()
+                                        .contains(&cursor_idx)
+                                    {
+                                        drop(piece);
 
-                                    board.set_generated_moves(moves);
+                                        let piece = board
+                                            .pieces_mut()
+                                            .get_mut(idx)
+                                            .unwrap()
+                                            .as_mut()
+                                            .unwrap();
+                                        piece.increment_moves();
+
+                                        board.submit_move(idx, cursor_idx, id, token).await;
+                                        selected_piece = None;
+                                        board.set_generated_moves(vec![]);
+
+                                        drop(board);
+
+                                        let game = app.game_mut().as_mut().unwrap();
+                                        game.incr_move_count();
+                                    }
+                                }
+                                None => {
+                                    if *board.turn() != side {
+                                        continue;
+                                    }
+
+                                    let idx = match side {
+                                        Side::White => (cursor_pos.1 * 8 + cursor_pos.0) as usize,
+                                        Side::Black => {
+                                            63 - (cursor_pos.1 * 8 + cursor_pos.0) as usize
+                                        }
+                                    };
+
+                                    if let Some(ref p) = board.piece_at(idx) {
+                                        if p.side() == board.turn() {
+                                            selected_piece = match side {
+                                                Side::White => Some((
+                                                    cursor_pos.0 as usize,
+                                                    cursor_pos.1 as usize,
+                                                )),
+                                                Side::Black => {
+                                                    let p = 63
+                                                        - (cursor_pos.1 * 8 + cursor_pos.0)
+                                                            as usize;
+                                                    Some((p.x(), p.y()))
+                                                }
+                                            };
+
+                                            let moves = board.generate_moves(idx, p);
+
+                                            board.set_generated_moves(moves);
+                                        }
+                                    }
                                 }
                             }
                         }

@@ -78,8 +78,10 @@ impl App {
         &mut self.game
     }
 
-    pub async fn seek_for_game(&self) {
+    pub async fn seek_for_game(&mut self) {
         let token = format!("Bearer {}", self.config.token());
+
+        self.ui_state = UIState::Seek;
 
         tokio::spawn(async move {
             let client = reqwest::Client::new();
