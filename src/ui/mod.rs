@@ -81,24 +81,30 @@ pub fn draw_board(
     // print top vertical line
     let (_, y) = terminal::size().unwrap();
 
-    execute!(
-        stdout,
-        Clear(ClearType::All),
-        cursor::MoveTo(0, y),
-        Print(statusline),
-        cursor::MoveTo(center - 1, 0),
-        Print(&format!("{}", H_LINE.repeat(TILE_WIDTH * 8 + 8 + 1))),
-    )?;
+    let center_y = y / 2 - ((TILE_HEIGHT as u16 * 8) as f32 / 2.0).ceil() as u16 - 2;
 
     // print rows
     for i in 1..=8 {
         execute!(
             stdout,
-            cursor::MoveTo(center - 3, TILE_HEIGHT as u16 * i - TILE_HEIGHT as u16 / 2),
+            cursor::MoveTo(
+                center - 3,
+                center_y + TILE_HEIGHT as u16 * i - TILE_HEIGHT as u16 / 2
+            ),
             Print(format!("{}", (9 - i).to_string().with(Color::DarkGrey))),
             cursor::MoveTo(center - 1, 0),
         )?;
     }
+
+    execute!(
+        stdout,
+        Clear(ClearType::All),
+        cursor::MoveTo(0, y),
+        Print(statusline),
+        cursor::MoveTo(center - 1, center_y),
+        Print(&format!("{}", H_LINE.repeat(TILE_WIDTH * 8 + 8 + 1))),
+    )?;
+
     // print
     for _ in 0..8 {
         // print tile's vertical lines
@@ -129,18 +135,18 @@ pub fn draw_board(
                 center + (TILE_WIDTH as u16 + 1) * idx as u16
                     - (TILE_WIDTH as f32 / 2.0).ceil() as u16
                     - 1,
-                TILE_HEIGHT as u16 * 8 + 1
+                center_y + TILE_HEIGHT as u16 * 8 + 1
             ),
             Print(format!("{}", c.with(Color::DarkGrey)))
         )?;
     }
 
-    let center_y = size.1 / 2 - board.moves().len() as u16 / 2;
+    let moves_center_y = size.1 / 2 - board.moves().len() as u16 / 2;
 
     for (idx, mv) in board.moves().iter().enumerate() {
         execute!(
             stdout,
-            cursor::MoveTo((size.0 / 5) * 4, center_y + idx as u16),
+            cursor::MoveTo((size.0 / 5) * 4, moves_center_y + idx as u16),
             Print(mv),
         )?;
     }
@@ -149,7 +155,7 @@ pub fn draw_board(
     for i in (0..8).rev() {
         execute!(
             stdout,
-            cursor::MoveTo(center, (TILE_HEIGHT as u16 * (7 - i)) + 1)
+            cursor::MoveTo(center, center_y + (TILE_HEIGHT as u16 * (7 - i)) + 1)
         )?;
 
         for j in 0..8 {
