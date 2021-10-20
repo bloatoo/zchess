@@ -11,13 +11,14 @@
 - [x] Finish move generation
 - [x] Menu UI
 - [x] Highlight previous move
+- [x] Documentation
+- [x] System to only allow redrawing the statusline instead of redrawing the whole board (bool passed to draw_board?)
 
-- [ ] System to only allow redrawing the statusline instead of redrawing the whole board (bool passed to draw_board?)
 - [ ] Check for check
 - [ ] Resize board dynamically as the terminal size changes
 - [ ] Pinning
-- [ ] Documentation
 - [ ] Premoves?
 - [ ] Time left for each player
 - [ ] Lichess chat
 - [ ] Proper project name lol
+- [ ] Options for seeking games (clock total time and increment, for example)
