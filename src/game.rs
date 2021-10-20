@@ -9,6 +9,27 @@ pub struct GameState {
     status: String,
 }
 
+#[derive(Deserialize, Debug, Clone)]
+pub struct ChatMessage {
+    username: String,
+    room: String,
+    text: String,
+}
+
+impl ChatMessage {
+    pub fn username(&self) -> &String {
+        &self.username
+    }
+
+    pub fn room(&self) -> &String {
+        &self.room
+    }
+
+    pub fn text(&self) -> &String {
+        &self.username
+    }
+}
+
 impl GameState {
     pub fn moves(&self) -> &String {
         &self.moves
@@ -97,6 +118,7 @@ pub struct Game {
     move_count: u32,
     data: GameData,
     state: GameState,
+    messages: Vec<ChatMessage>,
 }
 
 impl Game {
@@ -106,8 +128,17 @@ impl Game {
             id: id.to_string(),
             move_count: 0,
             data,
+            messages: vec![],
             state,
         }
+    }
+
+    pub fn new_message(&mut self, msg: ChatMessage) {
+        self.messages.push(msg);
+    }
+
+    pub fn messages(&self) -> &Vec<ChatMessage> {
+        &self.messages
     }
 
     pub fn board(&self) -> &Board {

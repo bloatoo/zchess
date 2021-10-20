@@ -128,6 +128,11 @@ async fn event_loop(rx: Receiver<Message>, app: Arc<Mutex<App>>) {
                 app.update_game_state(state);
                 app.state_changed = true;
             }
+
+            Message::NewMessage(msg) => {
+                let game = app.game_mut().as_mut().unwrap();
+                game.new_message(msg);
+            }
         }
     }
 }

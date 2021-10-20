@@ -1,7 +1,7 @@
 use crate::{
     chess::{Board, Side},
     config::Config,
-    game::{Game, GameData, GameState},
+    game::{ChatMessage, Game, GameData, GameState},
     message::Message,
     ui::UIState,
     utils::debug,
@@ -93,11 +93,13 @@ impl App {
         tokio::spawn(async move {
             let client = reqwest::Client::new();
 
+            let params = [("rated", "false"), ("time", "10"), ("increment", "0")];
+
             let mut stream = client
                 .post("https://lichess.org/api/board/seek")
-                .body("time=10&increment=0")
+                .form(&params)
                 .header("Authorization", token)
-                .header("Content-Type", "text/plain")
+                .header("Content-Type", "application/x-www-form-urlencoded")
                 .send()
                 .await
                 .unwrap()
@@ -128,9 +130,6 @@ impl App {
 
     pub fn init_new_game<T: ToString>(&mut self, id: T) {
         let id = id.to_string();
-        //self.game = Some(Game::new(Board::default(), id.clone()));
-        //self.ui_state = UIState::Game;
-
         let tx = self.main_tx.clone();
 
         let token = format!("Bearer {}", self.config.token());
@@ -178,6 +177,12 @@ impl App {
                             let state: GameState = serde_json::from_value(json).unwrap();
 
                             tx.send(Message::GameStateUpdate(state)).unwrap();
+                        }
+
+                        "chatLine" => {
+                            let msg: ChatMessage = serde_json::from_value(json).unwrap();
+
+                            tx.send(Message::NewMessage(msg)).unwrap();
                         }
                         _ => (),
                     }

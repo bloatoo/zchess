@@ -48,7 +48,7 @@ pub fn draw_board(
     cursor_pos: (u16, u16),
     selected_piece: Option<(usize, usize)>,
     stdout: &mut Stdout,
-    statusline_only: bool,
+    no_board: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let tile_str = format!("│{}", " ".repeat(TILE_WIDTH));
     let size = terminal::size()?;
@@ -78,9 +78,9 @@ pub fn draw_board(
         clock.initial() / 1000 / 60,
         clock.increment() / 1000
     );
-    let (_, y) = terminal::size().unwrap();
+    let (x, y) = terminal::size().unwrap();
 
-    if statusline_only {
+    if no_board {
         execute!(
             stdout,
             cursor::MoveTo(0, y),
@@ -100,6 +100,17 @@ pub fn draw_board(
         cursor::MoveTo(0, y),
         Print(statusline),
     )?;
+
+    // draw chat
+    for (idx, msg) in app.game().as_ref().unwrap().messages().iter().enumerate() {
+        let msg_string = format!("{}: {}", msg.username(), msg.text());
+
+        execute!(
+            stdout,
+            cursor::MoveTo(x - x / 5, center_y + idx as u16),
+            Print(msg_string)
+        )?;
+    }
 
     // print rows
     for i in 1..=8 {
