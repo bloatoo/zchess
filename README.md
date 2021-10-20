@@ -21,8 +21,7 @@ As of now, a Lichess API key must be provided for any functionality. Offline gam
 q | Quit
 hjkl + arrow keys | Move the cursor during games
 enter | Select a menu item or a piece, or move the selected piece
-
 ```
-## Preview
+### Preview
 
 ![Preview](media/preview.png?raw=true "Preview")
