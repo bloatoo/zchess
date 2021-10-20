@@ -141,6 +141,10 @@ impl Game {
         &self.messages
     }
 
+    pub fn set_state(&mut self, state: GameState) {
+        self.state = state;
+    }
+
     pub fn board(&self) -> &Board {
         &self.board
     }

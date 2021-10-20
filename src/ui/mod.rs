@@ -3,6 +3,7 @@ use crate::{
     chess::{Side, Square},
     message::Message,
     ui::event::*,
+    utils::fmt_clock,
 };
 
 use std::io::{Stdout, Write};
@@ -61,12 +62,17 @@ pub fn draw_board(
     let w_player = game.data().white();
     let b_player = game.data().black();
 
+    let wtime = game.state().wtime();
+    let btime = game.state().btime();
+
     let names = format!(
-        "white: {} ({}) | black: {} ({})",
+        "white: {} ({}) [{}] | black: {} ({}) [{}]",
         w_player.name(),
         w_player.id(),
+        fmt_clock(*wtime),
         b_player.name(),
-        b_player.id()
+        b_player.id(),
+        fmt_clock(*btime)
     );
 
     let clock = game.data().clock();
@@ -78,6 +84,7 @@ pub fn draw_board(
         clock.initial() / 1000 / 60,
         clock.increment() / 1000
     );
+
     let (x, y) = terminal::size().unwrap();
 
     if no_board {

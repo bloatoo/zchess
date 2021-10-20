@@ -126,6 +126,8 @@ impl App {
         }
 
         std::mem::swap(game.board_mut(), &mut board);
+
+        game.set_state(state);
     }
 
     pub fn init_new_game<T: ToString>(&mut self, id: T) {
