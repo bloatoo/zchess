@@ -337,22 +337,22 @@ pub async fn start(
                     app.seek_for_game().await;
                 }
                 Key::Char('q') => break,
-                Key::Char('h') => {
+                Key::Char('h') | Key::Left => {
                     if cursor_pos.0 >= 1 {
                         cursor_pos.0 -= 1;
                     }
                 }
-                Key::Char('j') => {
+                Key::Char('j') | Key::Down => {
                     if cursor_pos.1 >= 1 {
                         cursor_pos.1 -= 1;
                     }
                 }
-                Key::Char('k') => {
+                Key::Char('k') | Key::Up => {
                     if cursor_pos.1 < 7 {
                         cursor_pos.1 += 1;
                     }
                 }
-                Key::Char('l') => {
+                Key::Char('l') | Key::Right => {
                     if cursor_pos.0 < 7 {
                         cursor_pos.0 += 1;
                     }
