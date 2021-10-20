@@ -1,4 +1,4 @@
-use chess::{app::App, chess::Board, message::Message, ui};
+use chess::{app::App, message::Message, ui, utils::debug};
 use reqwest::Client;
 use serde_json::Value;
 
@@ -48,6 +48,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let app = App::new(main_tx.clone()).await.unwrap();
 
+    let debug_enabled = *app.config().debug();
+
     let stream_tx = main_tx.clone();
 
     let token = format!("Bearer {}", app.config().token());
@@ -69,6 +71,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let ev_string = String::from_utf8(ev.to_vec()).unwrap();
 
             if ev_string.len() > 1 {
+                if debug_enabled {
+                    debug(&format!("main_event_stream: {}", ev_string));
+                }
+
                 let json: Value =
                     serde_json::from_str(&ev_string).unwrap_or_else(|_| panic!("{}", ev_string));
 

@@ -4,6 +4,7 @@ use crate::{
     game::{Game, GameData, GameState},
     message::Message,
     ui::UIState,
+    utils::debug,
 };
 
 use futures::stream::StreamExt;
@@ -58,6 +59,10 @@ impl App {
             .await?
             .to_string();
 
+        if *config.debug() {
+            debug(&format!("own_info: {}", res));
+        }
+
         Ok(Self {
             game: None,
             main_tx,
@@ -89,7 +94,8 @@ impl App {
             let client = reqwest::Client::new();
 
             let mut stream = client
-                .post("https://lichess.org/api/board/seek?time=10&increment=0")
+                .post("https://lichess.org/api/board/seek")
+                .body("time=10&increment=0")
                 .header("Authorization", token)
                 .header("Content-Type", "text/plain")
                 .send()
@@ -110,7 +116,6 @@ impl App {
         let moves: Vec<&str> = state.moves().split(" ").collect();
 
         let game = self.game_mut().as_mut().unwrap();
-        let omc = *game.move_count() as usize;
 
         let mut board = Board::default();
 
@@ -129,6 +134,8 @@ impl App {
         let tx = self.main_tx.clone();
 
         let token = format!("Bearer {}", self.config.token());
+
+        let debug_enabled = *self.config.debug();
 
         tokio::spawn(async move {
             let path = format!(
@@ -151,6 +158,10 @@ impl App {
                 let data = String::from_utf8(ev.to_vec()).unwrap();
 
                 if data.len() > 1 {
+                    if debug_enabled {
+                        debug(&format!("game_stream: {}", data));
+                    }
+
                     let json: Value = serde_json::from_str(&data).unwrap();
 
                     match json["type"].as_str().unwrap() {
@@ -172,18 +183,6 @@ impl App {
                     }
                 }
             }
-
-            // debugging
-            /*let mut file = std::fs::OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open("/home/quasar/.game_data")
-            .unwrap();
-
-            while let Some(ev) = stream.next().await {
-                let ev = ev.unwrap().to_vec();
-                file.write_all(&ev).unwrap();
-            }*/
         });
     }
 

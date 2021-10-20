@@ -24,6 +24,7 @@ impl PieceRender {
 pub struct Config {
     pieces: HashMap<String, PieceRender>,
     token: String,
+    debug: bool,
 }
 
 impl Config {
@@ -55,5 +56,9 @@ impl Config {
         };
 
         self.pieces.get(idx_str.into())
+    }
+
+    pub fn debug(&self) -> &bool {
+        &self.debug
     }
 }

@@ -4,6 +4,7 @@ pub mod config;
 pub mod game;
 pub mod message;
 pub mod ui;
+pub mod utils;
 
 #[cfg(test)]
 mod tests {
