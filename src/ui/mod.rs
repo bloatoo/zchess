@@ -48,6 +48,7 @@ pub fn draw_board(
     cursor_pos: (u16, u16),
     selected_piece: Option<(usize, usize)>,
     stdout: &mut Stdout,
+    statusline_only: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let tile_str = format!("│{}", " ".repeat(TILE_WIDTH));
     let size = terminal::size()?;
@@ -77,11 +78,28 @@ pub fn draw_board(
         clock.initial() / 1000 / 60,
         clock.increment() / 1000
     );
-
-    // print top vertical line
     let (_, y) = terminal::size().unwrap();
 
+    if statusline_only {
+        execute!(
+            stdout,
+            cursor::MoveTo(0, y),
+            Clear(ClearType::CurrentLine),
+            Print(statusline.clone())
+        )?;
+
+        return Ok(());
+    }
+
     let center_y = y / 2 - ((TILE_HEIGHT as u16 * 8) as f32 / 2.0).ceil() as u16 - 2;
+
+    // clear terminal and draw statusline
+    execute!(
+        stdout,
+        Clear(ClearType::All),
+        cursor::MoveTo(0, y),
+        Print(statusline),
+    )?;
 
     // print rows
     for i in 1..=8 {
@@ -96,11 +114,9 @@ pub fn draw_board(
         )?;
     }
 
+    // print first line
     execute!(
         stdout,
-        Clear(ClearType::All),
-        cursor::MoveTo(0, y),
-        Print(statusline),
         cursor::MoveTo(center - 1, center_y),
         Print(&format!("{}", H_LINE.repeat(TILE_WIDTH * 8 + 8 + 1))),
     )?;
@@ -141,7 +157,11 @@ pub fn draw_board(
         )?;
     }
 
-    let moves_center_y = size.1 / 2 - board.moves().len() as u16 / 2;
+    let moves_center_y = if board.moves().len() > size.1 as usize {
+        0
+    } else {
+        size.1 / 2 - board.moves().len() as u16 / 2
+    };
 
     for (idx, mv) in board.moves().iter().enumerate() {
         execute!(
@@ -292,9 +312,11 @@ pub async fn start(
                 let curr_size = terminal::size().unwrap();
 
                 if app.state_changed || curr_size != size {
-                    draw_board(&app, cursor_pos, selected_piece, &mut stdout)?;
+                    draw_board(&app, cursor_pos, selected_piece, &mut stdout, false)?;
                     app.state_changed = false;
                     size = curr_size;
+                } else {
+                    draw_board(&app, cursor_pos, selected_piece, &mut stdout, true)?;
                 }
             }
 
@@ -363,7 +385,6 @@ pub async fn start(
                                 Some(p) => {
                                     let idx = p.1 * 8 + p.0;
 
-                                    let piece = board.piece_at(idx);
                                     let cursor_idx = match side {
                                         Side::White => (cursor_pos.1 * 8 + cursor_pos.0) as usize,
                                         Side::Black => {
@@ -375,8 +396,6 @@ pub async fn start(
                                         .current_generated_moves()
                                         .contains(&cursor_idx)
                                     {
-                                        drop(piece);
-
                                         let piece = board
                                             .pieces_mut()
                                             .get_mut(idx)
