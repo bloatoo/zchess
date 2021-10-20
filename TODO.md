@@ -20,3 +20,4 @@
 - [ ] Premoves?
 - [ ] Time left for each player
 - [ ] Lichess chat
+- [ ] Proper project name lol
