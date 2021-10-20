@@ -14,12 +14,13 @@
 - [x] Documentation
 - [x] System to only allow redrawing the statusline instead of redrawing the whole board (bool passed to draw_board?)
 - [x] Optional debug info (written to a file)
+- [x] Read Lichess chat
 
 - [ ] Check for check
 - [ ] Resize board dynamically as the terminal size changes
 - [ ] Pinning
 - [ ] Premoves?
 - [ ] Time left for each player
-- [ ] Lichess chat
 - [ ] Proper project name lol
 - [ ] Options for seeking games (clock total time and increment, for example)
+- [ ] Send a new message to Lichess chat
