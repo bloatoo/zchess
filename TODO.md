@@ -13,6 +13,7 @@
 - [x] Highlight previous move
 - [x] Documentation
 - [x] System to only allow redrawing the statusline instead of redrawing the whole board (bool passed to draw_board?)
+- [x] Optional debug info (written to a file)
 
 - [ ] Check for check
 - [ ] Resize board dynamically as the terminal size changes
@@ -22,4 +23,3 @@
 - [ ] Lichess chat
 - [ ] Proper project name lol
 - [ ] Options for seeking games (clock total time and increment, for example)
-- [ ] Optional debug info (written to a file)
