@@ -22,3 +22,4 @@
 - [ ] Lichess chat
 - [ ] Proper project name lol
 - [ ] Options for seeking games (clock total time and increment, for example)
+- [ ] Optional debug info (written to a file)
