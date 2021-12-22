@@ -22,8 +22,10 @@ impl PieceRender {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Config {
+    #[serde(default)]
     pieces: HashMap<String, PieceRender>,
     token: String,
+    #[serde(default)]
     debug: bool,
 }
 

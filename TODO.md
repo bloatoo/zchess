@@ -16,9 +16,9 @@
 - [x] Optional debug info (written to a file)
 - [x] Read Lichess chat
 - [x] Time left for each player
+- [x] Resize board dynamically as the terminal size changes
 
 - [ ] Check for check
-- [ ] Resize board dynamically as the terminal size changes
 - [ ] Pinning
 - [ ] Premoves?
 - [ ] Make a local timer for showing players' clocks

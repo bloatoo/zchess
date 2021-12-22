@@ -1,26 +1,26 @@
 # lichess api token
 token = ""
 
-[pieces.king]
-render_black = "♔"
-render_white = "♚"
+# [pieces.king]
+# render_black = "♔"
+# render_white = "♚"
 
-[pieces.queen]
-render_black = "♕"
-render_white = "♛"
+# [pieces.queen]
+# render_black = "♕"
+# render_white = "♛"
 
-[pieces.rook]
-render_black = "♖"
-render_white = "♜"
+# [pieces.rook]
+# render_black = "♖"
+# render_white = "♜"
 
-[pieces.bishop]
-render_black = "♗"
-render_white = "♝"
+# [pieces.bishop]
+# render_black = "♗"
+# render_white = "♝"
 
-[pieces.knight]
-render_black = "♘"
-render_white = "♞"
+# [pieces.knight]
+# render_black = "♘"
+ #render_white = "♞"
 
-[pieces.pawn]
-render_black = "♙"
-render_white = "p"
+# [pieces.pawn]
+# render_black = "♙"
+# render_white = "p"
