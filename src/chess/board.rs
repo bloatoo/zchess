@@ -124,17 +124,61 @@ impl Board {
         }
     }
 
+    pub fn revert_move(&mut self) {
+        if let Some(mv) =  self.moves.last() {
+            let mv = mv.split_at(2);
+            let mv_new = vec![mv.1, mv.0].join("");
+            self.make_move_str(&mv_new);
+            self.moves.pop();
+            self.moves.pop();
+        }
+    }
+
     pub fn generate_moves(&self, sq: usize, piece: &Piece) -> Vec<usize> {
         use PieceKind::*;
 
-        match piece.kind() {
+        let mut moves = match piece.kind() {
             Pawn => generate_pawn_moves(&self, sq, piece),
             Rook => generate_rook_moves(&self, sq, piece),
             Knight => generate_knight_moves(&self, sq, piece),
             Bishop => generate_bishop_moves(&self, sq, piece),
             Queen => generate_queen_moves(&self, sq, piece),
             King => generate_king_moves(&self, sq, piece),
+        };
+
+
+        if self.is_check(piece.side()) {
+            let mut board = self.clone();
+            for idx in 0..moves.len() {
+                let mv = moves[idx];
+                board.make_move(sq, mv);
+
+                if board.is_check(piece.side()) {
+                    moves.remove(idx);
+                }
+
+                board.revert_move();
+            }
         }
+
+        moves
+    }
+    
+    pub fn is_check(&self, side: &Side) -> bool {
+        let king = self.pieces.iter().enumerate().find(|(_, piece)| {
+            match piece {
+                Some(p) => *p.kind() == PieceKind::King && *p.side() == *side,
+                None => false
+            }
+        }).unwrap().0;
+
+        for (idx, piece) in self.pieces.iter().enumerate().filter(|(_, p)| p.is_some()) {
+            if self.generate_moves(idx, piece.as_ref().unwrap()).contains(&king) {
+                return true;
+            }
+        }
+
+        false
     }
 
     pub fn moves(&self) -> &Vec<String> {

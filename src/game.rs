@@ -26,7 +26,7 @@ impl ChatMessage {
     }
 
     pub fn text(&self) -> &String {
-        &self.username
+        &self.text
     }
 }
 
