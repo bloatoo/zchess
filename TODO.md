@@ -20,6 +20,7 @@
 - [x] Check for check
 
 - [ ] Pinning
+- [ ] Local game
 - [ ] Premoves?
 - [ ] Make a local timer for showing players' clocks
 - [ ] Proper project name lol
