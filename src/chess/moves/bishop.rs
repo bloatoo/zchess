@@ -39,6 +39,10 @@ pub fn generate_bishop_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usi
         match y.cmp(&0) {
             Ordering::Greater => match x.cmp(&0) {
                 Ordering::Greater => {
+                    if sq.y() == 7 || sq.x() == 7 {
+                        continue;
+                    }
+
                     for idx in 1..=8 {
                         let square = sq + (idx * 8 + idx) as usize;
 
@@ -61,6 +65,10 @@ pub fn generate_bishop_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usi
                     }
                 }
                 Ordering::Less => {
+                    if sq.y() == 7 || sq.x() == 0 {
+                        continue;
+                    }
+
                     for idx in 1..=8 {
                         let square = sq + (idx * 8 - idx) as usize;
 
@@ -85,6 +93,10 @@ pub fn generate_bishop_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usi
             },
             Ordering::Less => match x.cmp(&0) {
                 Ordering::Greater => {
+                    if sq.y() == 0 || sq.x() == 7 {
+                        continue;
+                    }
+
                     for idx in 1..=sq.y() {
                         let square = sq - (idx as usize * 8) + idx;
 
@@ -107,6 +119,9 @@ pub fn generate_bishop_moves(board: &Board, sq: usize, piece: &Piece) -> Vec<usi
                     }
                 }
                 Ordering::Less => {
+                    if sq.y() == 0 || sq.x() == 0 {
+                        continue;
+                    }
                     for idx in 1..=sq.y() {
                         let square = sq - (idx as usize * 8) - idx;
 

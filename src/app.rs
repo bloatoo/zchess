@@ -114,6 +114,11 @@ impl App {
         });
     }
 
+    pub fn local_game(&mut self) {
+        self.ui_state = UIState::Game;
+        self.game = Some(Game::local());
+    }
+
     pub fn update_game_state(&mut self, state: GameState) {
         let moves: Vec<&str> = state.moves().split(" ").collect();
 
@@ -171,7 +176,7 @@ impl App {
                                 serde_json::from_value(json["state"].clone()).unwrap();
 
                             let data: GameData = serde_json::from_value(json).unwrap();
-                            let game = Game::new(id.clone(), data, state);
+                            let game = Game::online(id.clone(), data, state);
                             tx.send(Message::GameDataInit(game)).unwrap();
                         }
 
@@ -209,13 +214,17 @@ impl App {
     pub fn check_own_side(&self) -> Side {
         let game = self.game().as_ref().unwrap();
 
-        let w = game.data().white();
+        if game.is_online() {
+            let w = game.data().white();
 
-        if w.id() == self.own_info.id() {
+            if w.id() == self.own_info.id() {
+                return Side::White;
+            }
+
+            return Side::Black;
+        } else {
             return Side::White;
         }
-
-        return Side::Black;
     }
 }
 

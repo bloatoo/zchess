@@ -284,7 +284,7 @@ pub fn draw_menu(
     stdout: &mut Stdout,
     cursor_pos: (u16, u16),
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let menu_items = vec!["New Lichess game"];
+    let menu_items = vec!["New Lichess game", "Local game"];
 
     let size = terminal::size().unwrap();
 
@@ -294,7 +294,7 @@ pub fn draw_menu(
 
         let mut final_string: String = i.to_string();
 
-        if cursor_pos.1 == idx as u16 {
+        if menu_items.len() as u16 - cursor_pos.1 == idx as u16 {
             final_string = format!("{}", final_string.bold());
         }
 
@@ -385,16 +385,21 @@ pub async fn start(
                 }*/
                 Key::Enter => {
                     match app.ui_state() {
-                        UIState::Menu => {
-                            if cursor_pos.1 == 0 {
-                                app.seek_for_game().await;
-                            }
-                        }
+                        UIState::Menu => match cursor_pos.1 {
+                            0 => app.seek_for_game().await,
+                            1 => app.local_game(),
+                            _ => (),
+                        },
 
                         UIState::Seek => {}
 
                         UIState::Game => {
-                            let side = app.check_own_side();
+                            let is_online = app.game().as_ref().unwrap().is_online();
+                            let side = if app.game().as_ref().unwrap().is_online() {
+                                app.check_own_side()
+                            } else {
+                                Side::White
+                            };
                             let id = app.game().as_ref().unwrap().id().to_string();
                             let token = app.config().token().to_string();
                             let board = app.game_mut().as_mut().unwrap().board_mut();
@@ -422,7 +427,9 @@ pub async fn start(
                                             .unwrap();
                                         piece.increment_moves();
 
-                                        board.submit_move(idx, cursor_idx, id, token).await;
+                                        board
+                                            .submit_move(idx, cursor_idx, id, token, is_online)
+                                            .await;
                                         selected_piece = None;
                                         board.set_generated_moves(vec![]);
 
@@ -433,8 +440,10 @@ pub async fn start(
                                     }
                                 }
                                 None => {
-                                    if *board.turn() != side {
-                                        continue;
+                                    if is_online {
+                                        if *board.turn() != side {
+                                            continue;
+                                        }
                                     }
 
                                     let idx = match side {
