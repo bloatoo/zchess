@@ -10,6 +10,7 @@ use crate::{
 use futures::stream::StreamExt;
 use serde::Deserialize;
 use serde_json::Value;
+use std::error::Error;
 use std::sync::mpsc::Sender;
 
 #[derive(Deserialize, Debug, Clone)]
@@ -35,7 +36,7 @@ impl OwnInfo {
 
 pub struct App {
     game: Option<Game>,
-    own_info: OwnInfo,
+    own_info: Option<OwnInfo>,
     config: Config,
     main_tx: Sender<Message>,
     ui_state: UIState,
@@ -43,12 +44,23 @@ pub struct App {
 }
 
 impl App {
-    pub async fn new(main_tx: Sender<Message>) -> Result<Self, Box<dyn std::error::Error>> {
-        let client = reqwest::Client::new();
-
+    pub async fn new(main_tx: Sender<Message>) -> Result<Self, Box<dyn Error>> {
         let config = Config::new().unwrap();
 
-        let token = format!("Bearer {}", config.token());
+        Ok(Self {
+            game: None,
+            main_tx,
+            config,
+            state_changed: true,
+            own_info: None,
+            ui_state: UIState::Menu,
+        })
+    }
+
+    pub async fn get_own_info(&self) -> Result<OwnInfo, Box<dyn Error>> {
+        let client = reqwest::Client::new();
+
+        let token = format!("Bearer {}", self.config.token());
 
         let res = client
             .get("https://lichess.org/api/account")
@@ -59,30 +71,11 @@ impl App {
             .await?
             .to_string();
 
-        if *config.debug() {
+        if *self.config.debug() {
             debug(&format!("own_info: {}", res));
         }
 
-        Ok(Self {
-            game: None,
-            main_tx,
-            config,
-            state_changed: true,
-            own_info: serde_json::from_str(&res).unwrap(),
-            ui_state: UIState::Menu,
-        })
-    }
-
-    pub fn config(&self) -> &Config {
-        &self.config
-    }
-
-    pub fn game(&self) -> &Option<Game> {
-        &self.game
-    }
-
-    pub fn game_mut(&mut self) -> &mut Option<Game> {
-        &mut self.game
+        Ok(serde_json::from_str(&res)?)
     }
 
     pub async fn seek_for_game(&mut self) {
@@ -112,6 +105,11 @@ impl App {
                 }
             }
         });
+    }
+
+    pub fn local_game(&mut self) {
+        self.ui_state = UIState::Game;
+        self.game = Some(Game::local());
     }
 
     pub fn update_game_state(&mut self, state: GameState) {
@@ -171,7 +169,7 @@ impl App {
                                 serde_json::from_value(json["state"].clone()).unwrap();
 
                             let data: GameData = serde_json::from_value(json).unwrap();
-                            let game = Game::new(id.clone(), data, state);
+                            let game = Game::online(id.clone(), data, state);
                             tx.send(Message::GameDataInit(game)).unwrap();
                         }
 
@@ -193,6 +191,22 @@ impl App {
         });
     }
 
+    pub fn check_own_side(&self) -> Side {
+        let game = self.game().as_ref().unwrap();
+
+        if game.is_online() {
+            let w = game.data().white();
+
+            if w.id() == self.own_info.as_ref().unwrap().id() {
+                return Side::White;
+            }
+
+            return Side::Black;
+        } else {
+            return Side::White;
+        }
+    }
+
     pub fn ui_state(&self) -> &UIState {
         &self.ui_state
     }
@@ -201,21 +215,29 @@ impl App {
         self.ui_state = state;
     }
 
+    pub fn own_info(&self) -> &Option<OwnInfo> {
+        &self.own_info
+    }
+
+    pub fn set_own_info(&mut self, info: OwnInfo) {
+        self.own_info = Some(info);
+    }
+
+    pub fn config(&self) -> &Config {
+        &self.config
+    }
+
+    pub fn game(&self) -> &Option<Game> {
+        &self.game
+    }
+
+    pub fn game_mut(&mut self) -> &mut Option<Game> {
+        &mut self.game
+    }
+
     pub fn start_game(&mut self, game: Game) {
         self.game = Some(game);
         self.ui_state = UIState::Game;
-    }
-
-    pub fn check_own_side(&self) -> Side {
-        let game = self.game().as_ref().unwrap();
-
-        let w = game.data().white();
-
-        if w.id() == self.own_info.id() {
-            return Side::White;
-        }
-
-        return Side::Black;
     }
 }
 

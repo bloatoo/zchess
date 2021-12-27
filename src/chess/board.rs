@@ -125,7 +125,7 @@ impl Board {
     }
 
     pub fn revert_move(&mut self) {
-        if let Some(mv) =  self.moves.last() {
+        if let Some(mv) = self.moves.last() {
             let mv = mv.split_at(2);
             let mv_new = vec![mv.1, mv.0].join("");
             self.make_move_str(&mv_new);
@@ -146,35 +146,54 @@ impl Board {
             King => generate_king_moves(&self, sq, piece),
         };
 
+        if piece.side() == &self.turn {
+            if self.is_check(&self.turn) {
+                let mut board = self.clone();
 
-        if self.is_check(piece.side()) {
-            let mut board = self.clone();
-            for idx in 0..moves.len() {
-                let mv = moves[idx];
-                board.make_move(sq, mv);
+                for mv in moves.clone().iter() {
+                    board.make_move(sq, *mv);
 
-                if board.is_check(piece.side()) {
-                    moves.remove(idx);
+                    if board.is_check(piece.side()) {
+                        moves.retain(|m| m != mv);
+                    }
+
+                    board.revert_move();
                 }
-
-                board.revert_move();
             }
         }
 
         moves
     }
-    
-    pub fn is_check(&self, side: &Side) -> bool {
-        let king = self.pieces.iter().enumerate().find(|(_, piece)| {
-            match piece {
-                Some(p) => *p.kind() == PieceKind::King && *p.side() == *side,
-                None => false
-            }
-        }).unwrap().0;
 
-        for (idx, piece) in self.pieces.iter().enumerate().filter(|(_, p)| p.is_some()) {
-            if self.generate_moves(idx, piece.as_ref().unwrap()).contains(&king) {
-                return true;
+    pub fn is_check(&self, side: &Side) -> bool {
+        let mut king = None;
+
+        for (idx, piece) in self.pieces.iter().enumerate() {
+            if let Some(p) = piece {
+                if p.kind() == &PieceKind::King && p.side() == side {
+                    king = Some(idx)
+                }
+            }
+        }
+
+        if king.is_none() {
+            panic!("OH")
+        }
+
+        for (idx, piece) in self.pieces.iter().enumerate() {
+            if let Some(p) = piece.as_ref() {
+                if p.kind() == &PieceKind::King {
+                    continue;
+                }
+
+                if p.side() == side {
+                    continue;
+                }
+
+                if self.generate_moves(idx, p).contains(&king.unwrap()) {
+                    //panic!("piece");
+                    return true;
+                }
             }
         }
 
@@ -191,31 +210,34 @@ impl Board {
         dest: usize,
         game_id: String,
         token: String,
+        online: bool,
     ) {
         self.make_move(source, dest);
-        let (src, dest) = (idx_to_square(source), idx_to_square(dest));
+        if online {
+            let (src, dest) = (idx_to_square(source), idx_to_square(dest));
 
-        let client = reqwest::Client::new();
-        let url = format!(
-            "https://lichess.org/api/board/game/{}/move/{}{}",
-            game_id, src, dest
-        );
+            let client = reqwest::Client::new();
+            let url = format!(
+                "https://lichess.org/api/board/game/{}/move/{}{}",
+                game_id, src, dest
+            );
 
-        let token = format!("Bearer {}", token);
+            let token = format!("Bearer {}", token);
 
-        let res = client
-            .post(url)
-            .header("Authorization", token)
-            .send()
-            .await
-            .unwrap()
-            .text()
-            .await
-            .unwrap()
-            .to_string();
+            let res = client
+                .post(url)
+                .header("Authorization", token)
+                .send()
+                .await
+                .unwrap()
+                .text()
+                .await
+                .unwrap()
+                .to_string();
 
-        if res.contains("error") {
-            panic!("{}", res);
+            if res.contains("error") {
+                panic!("{}", res);
+            }
         }
     }
 

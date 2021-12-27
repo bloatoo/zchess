@@ -54,7 +54,7 @@ impl From<KeyEvent> for Key {
 
             KeyEvent {
                 code: event::KeyCode::Char(c),
-                modifiers: event::KeyModifiers::CONTROL
+                modifiers: event::KeyModifiers::CONTROL,
             } => Key::Ctrl(c),
 
             KeyEvent {
@@ -63,7 +63,6 @@ impl From<KeyEvent> for Key {
             } => Key::Char(c),
 
             _ => Key::Unknown,
-
         }
     }
 }

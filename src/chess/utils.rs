@@ -12,18 +12,6 @@ pub fn calculate_squares_to_edge(edge: Edge, sq: usize) -> usize {
 }
 
 pub fn idx_to_square(idx: usize) -> String {
-    /*let row = match idx {
-        x if x < 8 => 1
-        x if x > 7 && x < 16 => 2,
-        x if x > 15 && x < 24 => 3,
-        x if x > 23 && x < 32 => 4,
-        x if x > 31 && x < 40 => 5,
-        x if x > 39 && x < 48 => 6,
-        x if x > 47 && x < 56 => 7,
-        x if x > 55 && x < 64 => 8,
-        _ => unreachable!(),
-    };*/
-
     let row = idx.y() + 1;
 
     let file = match idx.x() {

@@ -45,12 +45,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::panic::set_hook(Box::new(|info| panic_hook(info)));
 
     let (main_tx, main_rx) = mpsc::channel::<Message>();
+    let stream_tx = main_tx.clone();
 
     let app = App::new(main_tx.clone()).await.unwrap();
-
     let debug_enabled = *app.config().debug();
-
-    let stream_tx = main_tx.clone();
 
     let token = format!("Bearer {}", app.config().token());
 

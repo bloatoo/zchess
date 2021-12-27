@@ -59,31 +59,42 @@ pub fn draw_board(
 
     let board = game.board();
 
-    let w_player = game.data().white();
-    let b_player = game.data().black();
+    let statusline = if game.is_online() {
+        let w_player = game.data().white();
+        let b_player = game.data().black();
 
-    let wtime = game.state().wtime();
-    let btime = game.state().btime();
+        let wtime = game.state().wtime();
+        let btime = game.state().btime();
 
-    let names = format!(
-        "white: {} ({}) [{}] | black: {} ({}) [{}]",
-        w_player.name(),
-        w_player.id(),
-        fmt_clock(*wtime),
-        b_player.name(),
-        b_player.id(),
-        fmt_clock(*btime)
-    );
+        let names = format!(
+            "white: {} ({}) [{}] | black: {} ({}) [{}]",
+            w_player.name(),
+            w_player.id(),
+            fmt_clock(*wtime),
+            b_player.name(),
+            b_player.id(),
+            fmt_clock(*btime)
+        );
 
-    let clock = game.data().clock();
+        let clock = game.data().clock();
 
-    let statusline = format!(
-        "id: {} | {} | {}+{}",
-        game.id(),
-        names,
-        clock.initial() / 1000 / 60,
-        clock.increment() / 1000
-    );
+        format!(
+            "id: {} | {} | {}+{}",
+            game.id(),
+            names,
+            clock.initial() / 1000 / 60,
+            clock.increment() / 1000
+        )
+    } else {
+        let wtime = game.state().wtime();
+        let btime = game.state().btime();
+
+        format!(
+            "white: {} | black: {}",
+            fmt_clock(*wtime),
+            fmt_clock(*btime)
+        )
+    };
 
     let (x, y) = terminal::size().unwrap();
 
@@ -284,7 +295,7 @@ pub fn draw_menu(
     stdout: &mut Stdout,
     cursor_pos: (u16, u16),
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let menu_items = vec!["New Lichess game"];
+    let menu_items = vec!["New Lichess game", "Local game"];
 
     let size = terminal::size().unwrap();
 
@@ -294,7 +305,7 @@ pub fn draw_menu(
 
         let mut final_string: String = i.to_string();
 
-        if cursor_pos.1 == idx as u16 {
+        if menu_items.len() as u16 - cursor_pos.1 == idx as u16 {
             final_string = format!("{}", final_string.bold());
         }
 
@@ -385,16 +396,32 @@ pub async fn start(
                 }*/
                 Key::Enter => {
                     match app.ui_state() {
-                        UIState::Menu => {
-                            if cursor_pos.1 == 0 {
-                                app.seek_for_game().await;
+                        UIState::Menu => match cursor_pos.1 {
+                            0 => {
+                                if app.own_info().is_some() {
+                                    app.seek_for_game().await;
+                                } else {
+                                    if let Ok(info) = app.get_own_info().await {
+                                        app.set_own_info(info);
+                                        app.seek_for_game().await;
+                                    }
+                                }
                             }
-                        }
+                            1 => app.local_game(),
+                            _ => (),
+                        },
 
                         UIState::Seek => {}
 
                         UIState::Game => {
-                            let side = app.check_own_side();
+                            let is_online = app.game().as_ref().unwrap().is_online();
+
+                            let side = if is_online {
+                                app.check_own_side()
+                            } else {
+                                Side::White
+                            };
+
                             let id = app.game().as_ref().unwrap().id().to_string();
                             let token = app.config().token().to_string();
                             let board = app.game_mut().as_mut().unwrap().board_mut();
@@ -422,7 +449,9 @@ pub async fn start(
                                             .unwrap();
                                         piece.increment_moves();
 
-                                        board.submit_move(idx, cursor_idx, id, token).await;
+                                        board
+                                            .submit_move(idx, cursor_idx, id, token, is_online)
+                                            .await;
                                         selected_piece = None;
                                         board.set_generated_moves(vec![]);
 
@@ -433,8 +462,10 @@ pub async fn start(
                                     }
                                 }
                                 None => {
-                                    if *board.turn() != side {
-                                        continue;
+                                    if is_online {
+                                        if *board.turn() != side {
+                                            continue;
+                                        }
                                     }
 
                                     let idx = match side {

@@ -1,7 +1,7 @@
 use crate::chess::Board;
 use serde::Deserialize;
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, Default)]
 pub struct GameState {
     moves: String,
     wtime: u64,
@@ -9,7 +9,7 @@ pub struct GameState {
     status: String,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, Default)]
 pub struct ChatMessage {
     username: String,
     room: String,
@@ -48,7 +48,7 @@ impl GameState {
     }
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, Default)]
 pub struct GameData {
     clock: Clock,
     rated: bool,
@@ -74,7 +74,7 @@ impl GameData {
     }
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, Default)]
 pub struct Clock {
     initial: u64,
     increment: u64,
@@ -90,7 +90,7 @@ impl Clock {
     }
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, Default)]
 pub struct Player {
     id: String,
     name: String,
@@ -112,6 +112,12 @@ impl Player {
 }
 
 #[derive(Debug, Clone)]
+pub enum GameKind {
+    Online,
+    Local,
+}
+
+#[derive(Debug, Clone)]
 pub struct Game {
     board: Board,
     id: String,
@@ -119,17 +125,38 @@ pub struct Game {
     data: GameData,
     state: GameState,
     messages: Vec<ChatMessage>,
+    kind: GameKind,
 }
 
 impl Game {
-    pub fn new<T: ToString>(id: T, data: GameData, state: GameState) -> Self {
+    pub fn online<T: ToString>(id: T, data: GameData, state: GameState) -> Self {
         Self {
             board: Board::default(),
             id: id.to_string(),
             move_count: 0,
             data,
+            kind: GameKind::Online,
             messages: vec![],
             state,
+        }
+    }
+
+    pub fn local() -> Self {
+        Self {
+            board: Default::default(),
+            id: Default::default(),
+            move_count: Default::default(),
+            data: Default::default(),
+            messages: Default::default(),
+            state: Default::default(),
+            kind: GameKind::Local,
+        }
+    }
+
+    pub fn is_online(&self) -> bool {
+        match self.kind {
+            GameKind::Online => true,
+            GameKind::Local => false,
         }
     }
 
