@@ -239,23 +239,7 @@ impl App {
         self.game = Some(game);
         self.ui_state = UIState::Game;
     }
-
-    pub fn check_own_side(&self) -> Side {
-        let game = self.game().as_ref().unwrap();
-
-        if game.is_online() {
-            let w = game.data().white();
-
-            if w.id() == self.own_info.id() {
-                return Side::White;
-            }
-
-            return Side::Black;
-        } else {
-            return Side::White;
-        }
-    }
-
+}
 /*impl Default for App {
     fn default() -> Self {
         Self {

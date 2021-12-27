@@ -135,9 +135,6 @@ impl Board {
     }
 
     pub fn generate_moves(&self, sq: usize, piece: &Piece) -> Vec<usize> {
-        if piece.side() != self.turn() {
-            return vec![];
-        }
         use PieceKind::*;
 
         let mut moves = match piece.kind() {
