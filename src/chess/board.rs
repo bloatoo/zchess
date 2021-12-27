@@ -135,6 +135,9 @@ impl Board {
     }
 
     pub fn generate_moves(&self, sq: usize, piece: &Piece) -> Vec<usize> {
+        if piece.side() != self.turn() {
+            return vec![];
+        }
         use PieceKind::*;
 
         let mut moves = match piece.kind() {
@@ -177,7 +180,7 @@ impl Board {
         }
 
         if king.is_none() {
-            panic!("OH")
+            panic!("king not found, shouldn't happen")
         }
 
         for (idx, piece) in self.pieces.iter().enumerate() {
@@ -191,7 +194,6 @@ impl Board {
                 }
 
                 if self.generate_moves(idx, p).contains(&king.unwrap()) {
-                    //panic!("piece");
                     return true;
                 }
             }
