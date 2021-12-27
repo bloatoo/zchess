@@ -26,3 +26,5 @@
 - [ ] Proper project name lol
 - [ ] Options for seeking games (clock total time and increment, for example)
 - [ ] Send a new message to Lichess chat
+- [ ] Puzzles
+- [ ] Proper UI
