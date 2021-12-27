@@ -206,11 +206,19 @@ pub fn draw_board(
         )?;
     }
 
+    let extra_y = match app.config().center_pieces() {
+        true => 1,
+        false => 0,
+    };
+
     // render pieces
     for i in (0..8).rev() {
         execute!(
             stdout,
-            cursor::MoveTo(center, center_y + (TILE_HEIGHT as u16 * (7 - i)) + 1)
+            cursor::MoveTo(
+                center,
+                center_y + (TILE_HEIGHT as u16 * (7 - i)) + 1 + extra_y
+            )
         )?;
 
         for j in 0..8 {
@@ -238,6 +246,8 @@ pub fn draw_board(
                 }
                 None => "".into(),
             };
+
+            let piece_string_raw = piece_string.clone();
 
             if let Some(ref p) = piece {
                 if p.side() == &app.check_own_side() {
@@ -286,9 +296,11 @@ pub fn draw_board(
                 }
             }
 
+            let extra_x = (TILE_WIDTH as u16 - piece_string_raw.len() as u16) / 2;
+
             execute!(
                 stdout,
-                cursor::MoveToColumn(center + 1 + (TILE_WIDTH as u16 + 1) * j as u16),
+                cursor::MoveToColumn(center + 1 + (TILE_WIDTH as u16 + 1) * j as u16 + extra_x),
                 Print(piece_string),
             )?;
         }

@@ -27,6 +27,8 @@ pub struct Config {
     token: String,
     #[serde(default)]
     debug: bool,
+    #[serde(default)]
+    center_pieces: bool,
 }
 
 impl Config {
@@ -35,6 +37,10 @@ impl Config {
         let path = format!("{}/.config/chess.toml", home);
         let data = fs::read_to_string(path).unwrap();
         toml::from_str(&data)
+    }
+
+    pub fn center_pieces(&self) -> &bool {
+        &self.center_pieces
     }
 
     pub fn pieces(&self) -> &HashMap<String, PieceRender> {
