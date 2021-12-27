@@ -23,6 +23,7 @@ use crossterm::{
 const TILE_WIDTH: usize = 8;
 const TILE_HEIGHT: usize = 4;
 const H_LINE: &str = "─";
+const H_CORNER: &str = "┼";
 
 pub mod event;
 
@@ -147,7 +148,8 @@ pub fn draw_board(
     execute!(
         stdout,
         cursor::MoveTo(center - 1, center_y),
-        Print(&format!("{}", H_LINE.repeat(TILE_WIDTH * 8 + 8 + 1))),
+        Print(&format!("┬{}", H_LINE.repeat((TILE_WIDTH as usize + 1) - 1)).repeat(8)),
+        Print("┬")
     )?;
 
     // print
@@ -166,10 +168,14 @@ pub fn draw_board(
         execute!(
             stdout,
             cursor::MoveToColumn(center),
-            Print(&format!(
-                "{}",
-                H_LINE.repeat(TILE_WIDTH as usize * 8 + 8 + 1)
-            )),
+            Print(
+                &format!(
+                    "{}{}",
+                    H_CORNER,
+                    H_LINE.repeat((TILE_WIDTH as usize + 1) - 1)
+                )
+                .repeat(8)
+            ),
         )?;
     }
 
