@@ -28,3 +28,4 @@
 - [ ] Send a new message to Lichess chat
 - [ ] Puzzles
 - [ ] Proper UI
+- [ ] Profile page (own profile + other players?)
