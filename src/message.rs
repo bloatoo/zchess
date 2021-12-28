@@ -1,3 +1,4 @@
+use crate::app::OwnInfo;
 use crate::game::{ChatMessage, Game, GameState};
 
 pub enum Message {
@@ -5,4 +6,5 @@ pub enum Message {
     GameStateUpdate(GameState),
     GameDataInit(Game),
     NewMessage(ChatMessage),
+    GetOwnInfo(OwnInfo),
 }

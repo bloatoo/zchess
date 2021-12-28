@@ -332,8 +332,9 @@ pub fn draw_board(
 }
 
 pub fn draw_menu(
-    stdout: &mut Stdout,
+    app: &App,
     cursor_pos: (u16, u16),
+    stdout: &mut Stdout,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let menu_items = vec!["New Lichess game", "Local game"];
 
@@ -355,6 +356,21 @@ pub fn draw_menu(
             Print(final_string)
         )?;
     }
+
+    let header_string = match app.own_info() {
+        Some(info) => {
+            format!("Logged in as: {}", info.username())
+        }
+        None => String::from("Loading Lichess info..."),
+    };
+
+    execute!(
+        stdout,
+        cursor::MoveTo(size.0 - header_string.len() as u16, 0),
+        Clear(ClearType::CurrentLine),
+        Print(header_string)
+    )?;
+
     Ok(())
 }
 
@@ -390,7 +406,7 @@ pub async fn start(
             }
 
             &UIState::Menu => {
-                draw_menu(&mut stdout, cursor_pos)?;
+                draw_menu(&app, cursor_pos, &mut stdout)?;
             }
             UIState::Seek => {
                 draw_seek(&mut stdout)?;
@@ -438,10 +454,6 @@ pub async fn start(
                                 if app.own_info().is_some() {
                                     app.seek_for_game().await;
                                 } else {
-                                    if let Ok(info) = app.get_own_info().await {
-                                        app.set_own_info(info);
-                                        app.seek_for_game().await;
-                                    }
                                 }
                             }
                             1 => app.local_game(),

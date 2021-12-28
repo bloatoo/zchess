@@ -51,6 +51,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let debug_enabled = *app.config().debug();
 
     let token = format!("Bearer {}", app.config().token());
+    let token_clone = token.clone();
 
     tokio::spawn(async move {
         let client = Client::new();
@@ -94,6 +95,32 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     });
 
+    let own_info_tx = main_tx.clone();
+
+    tokio::spawn(async move {
+        let client = reqwest::Client::new();
+
+        let res = client
+            .get("https://lichess.org/api/account")
+            .header("Authorization", token_clone)
+            .send()
+            .await;
+
+        if let Ok(res) = res {
+            let text = res.text().await;
+
+            if let Ok(text) = text {
+                let info = serde_json::from_str(&text).unwrap();
+
+                if debug_enabled {
+                    debug(&format!("own_info: {}", text));
+                }
+
+                own_info_tx.send(Message::GetOwnInfo(info)).unwrap();
+            }
+        }
+    });
+
     let app = Arc::new(Mutex::new(app));
     let app_clone = app.clone();
 
@@ -130,6 +157,9 @@ async fn event_loop(rx: Receiver<Message>, app: Arc<Mutex<App>>) {
             Message::NewMessage(msg) => {
                 let game = app.game_mut().as_mut().unwrap();
                 game.new_message(msg);
+            }
+            Message::GetOwnInfo(info) => {
+                app.set_own_info(info);
             }
         }
     }
