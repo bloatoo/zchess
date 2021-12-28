@@ -9,6 +9,9 @@ use crate::chess::moves::pawn::generate_pawn_moves;
 use crate::chess::moves::queen::generate_queen_moves;
 use crate::chess::moves::rook::generate_rook_moves;
 
+#[allow(unused)]
+use crate::utils::debug;
+
 pub trait Square {
     fn x(&self) -> usize;
     fn y(&self) -> usize;
@@ -82,6 +85,13 @@ impl Board {
         self.make_move(src, dest);
     }
 
+    fn make_move_str_no_prev(&mut self, mv: &str) {
+        let (src, dest) = mv.split_at(2);
+        let (src, dest) = (square_to_idx(src), square_to_idx(dest));
+
+        self.make_move_no_prev(src, dest);
+    }
+
     pub fn from_str(fen: &str, turn: Side) -> Self {
         let mut pieces: Vec<Option<Piece>> = vec![];
 
@@ -128,8 +138,7 @@ impl Board {
         if let Some(mv) = self.moves.last() {
             let mv = mv.split_at(2);
             let mv_new = vec![mv.1, mv.0].join("");
-            self.make_move_str(&mv_new);
-            self.moves.pop();
+            self.make_move_str_no_prev(&mv_new);
             self.moves.pop();
         }
     }
@@ -146,20 +155,24 @@ impl Board {
             King => generate_king_moves(&self, sq, piece),
         };
 
+        moves.retain(|m| m < &64);
+
         if piece.side() == &self.turn {
-            if self.is_check(&self.turn) {
-                let mut board = self.clone();
+            //if self.is_check(piece.side()) {
+            let mut board = self.clone();
+            for mv in moves.clone().iter() {
+                board.make_move(sq, *mv);
+                board.swap_turn();
+                debug(&format!("{}\n", &board.to_fen()));
 
-                for mv in moves.clone().iter() {
-                    board.make_move(sq, *mv);
-
-                    if board.is_check(piece.side()) {
-                        moves.retain(|m| m != mv);
-                    }
-
-                    board.revert_move();
+                if board.is_check(piece.side()) {
+                    moves.retain(|m| m != mv);
                 }
+
+                board.swap_turn();
+                board.revert_move();
             }
+            //}
         }
 
         moves
@@ -190,13 +203,37 @@ impl Board {
                     continue;
                 }
 
-                if self.generate_moves(idx, p).contains(&king.unwrap()) {
+                if p.side() != side && self.generate_moves(idx, p).contains(&king.unwrap()) {
                     return true;
                 }
             }
         }
 
         false
+    }
+
+    pub fn swap_turn(&mut self) {
+        self.turn = match self.turn {
+            Side::White => Side::Black,
+            Side::Black => Side::White,
+        }
+    }
+
+    pub fn to_fen(&self) -> String {
+        let mut string = String::new();
+        self.pieces.iter().enumerate().for_each(|(idx, piece)| {
+            if idx % 8 == 0 {
+                string.push('/');
+            } else {
+                if let Some(p) = piece {
+                    string.push_str(&format!("{}", p.as_ref()));
+                } else {
+                    string.push('e')
+                }
+            }
+        });
+
+        string
     }
 
     pub fn moves(&self) -> &Vec<String> {
@@ -251,18 +288,32 @@ impl Board {
             let idx = dest as isize - source as isize;
 
             if idx == 2 || idx == -2 {
-                /*let long = if idx == 2 {
-                    match piece.side() {
-                        Side::White => false,
-                        Side::Black => true,
-                    }
-                } else {
-                    match piece.side() {
-                        Side::White => false,
-                        Side::Black => true,
-                    }
-                };*/
+                let long = idx < 2;
 
+                self.castle(piece.side().clone(), long);
+                return;
+            }
+        }
+
+        self.set_piece(dest, Some(piece));
+        self.set_piece(source, None);
+
+        self.swap_turn();
+
+        self.previous_move = Some((source, dest));
+    }
+
+    fn make_move_no_prev(&mut self, source: usize, dest: usize) {
+        let piece = self.piece_at(source).clone().unwrap();
+
+        let (src_str, dest_str) = (idx_to_square(source), idx_to_square(dest));
+
+        self.moves.push(format!("{}{}", src_str, dest_str));
+
+        if piece.kind() == &PieceKind::King {
+            let idx = dest as isize - source as isize;
+
+            if idx == 2 || idx == -2 {
                 let long = idx < 2;
 
                 self.castle(piece.side().clone(), long);
@@ -277,8 +328,6 @@ impl Board {
             Side::White => Side::Black,
             Side::Black => Side::White,
         };
-
-        self.previous_move = Some((source, dest));
     }
 
     pub fn castle(&mut self, side: Side, long: bool) {

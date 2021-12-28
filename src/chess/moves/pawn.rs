@@ -1,5 +1,6 @@
 use crate::chess::utils::calculate_squares_to_edge;
 use crate::chess::{board::Edge, Board, Move, MoveConstraint, Piece, Side, Square};
+use crate::utils::debug;
 use std::cmp::Ordering;
 
 pub const PAWN_MOVES: &[Move] = &[
