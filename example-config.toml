@@ -1,6 +1,13 @@
 # lichess api token
 token = ""
 
+# on/off flags
+debug = false
+center_pieces = false
+
+# piece rendering options
+[pieces]
+
 [pieces.king]
 render_black = "♔"
 render_white = "♚"
