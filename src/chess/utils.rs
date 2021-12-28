@@ -46,3 +46,13 @@ pub fn square_to_idx(square: &str) -> usize {
 
     (row.parse::<usize>().unwrap() - 1) * 8 + file
 }
+
+pub fn uci_to_idx(uci: &str) -> (usize, usize) {
+    let (src, mut dest) = uci.split_at(2);
+
+    if dest.len() > 2 {
+        dest = &dest[..dest.len() - 1];
+    }
+
+    (square_to_idx(&src), square_to_idx(&dest))
+}

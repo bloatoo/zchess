@@ -1,6 +1,6 @@
 use crate::{
     app::App,
-    chess::{Side, Square},
+    chess::{utils::uci_to_idx, Side, Square},
     message::Message,
     ui::event::*,
     utils::fmt_clock,
@@ -308,10 +308,12 @@ pub fn draw_board(
                 }
             }
 
-            if let Some((src, dest)) = board.previous_move() {
-                if *src == idx {
+            if let Some(uci) = board.moves().last() {
+                let (src, dest) = uci_to_idx(uci);
+
+                if src == idx {
                     piece_string += &format!("{}", "*".with(Color::Blue).bold());
-                } else if *dest == idx {
+                } else if dest == idx {
                     piece_string += &format!("{}", "*".with(Color::Yellow).bold());
                 }
             }
@@ -429,9 +431,6 @@ pub async fn start(
                     selected_piece = None;
                 }
 
-                /*Key::Ctrl('g') => {
-                    app.start_new_game("abc");
-                }*/
                 Key::Enter => {
                     match app.ui_state() {
                         UIState::Menu => match cursor_pos.1 {

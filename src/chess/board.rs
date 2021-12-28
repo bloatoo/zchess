@@ -69,7 +69,6 @@ pub struct Board {
     en_passant: Option<usize>,
     turn: Side,
     current_generated_moves: Vec<usize>,
-    previous_move: Option<(usize, usize)>,
     moves: Vec<String>,
 }
 
@@ -128,7 +127,6 @@ impl Board {
             pieces,
             turn,
             en_passant: None,
-            previous_move: None,
             current_generated_moves: vec![],
             moves: vec![],
         }
@@ -297,8 +295,6 @@ impl Board {
         self.set_piece(source, None);
 
         self.swap_turn();
-
-        self.previous_move = Some((source, dest));
     }
 
     fn make_move_no_prev(&mut self, source: usize, dest: usize) {
@@ -322,10 +318,7 @@ impl Board {
         self.set_piece(dest, Some(piece));
         self.set_piece(source, None);
 
-        self.turn = match self.turn {
-            Side::White => Side::Black,
-            Side::Black => Side::White,
-        };
+        self.swap_turn();
     }
 
     pub fn castle(&mut self, side: Side, long: bool) {
@@ -369,12 +362,6 @@ impl Board {
             Side::White => Side::Black,
             Side::Black => Side::White,
         };
-
-        self.previous_move = Some((king_idx, dest_squares.0));
-    }
-
-    pub fn previous_move(&self) -> &Option<(usize, usize)> {
-        &self.previous_move
     }
 
     fn set_piece(&mut self, dest: usize, piece: Option<Piece>) {
