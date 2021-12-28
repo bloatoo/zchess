@@ -20,8 +20,6 @@ use crossterm::{
     },
 };
 
-const TILE_WIDTH: usize = 8;
-const TILE_HEIGHT: usize = 4;
 const H_LINE: &str = "─";
 const H_CORNER: &str = "┼";
 
@@ -52,9 +50,19 @@ pub fn draw_board(
     stdout: &mut Stdout,
     no_board: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let tile_str = format!("│{}", " ".repeat(TILE_WIDTH));
+    let tile_width = match app.config().tile_width() {
+        Some(w) => *w,
+        None => 8,
+    };
+
+    let tile_height = match app.config().tile_height() {
+        Some(h) => *h,
+        None => 4,
+    };
+
+    let tile_str = format!("│{}", " ".repeat(tile_width));
     let size = terminal::size()?;
-    let center = size.0 / 2 - TILE_WIDTH as u16 * 4 - 2;
+    let center = size.0 / 2 - tile_width as u16 * 4 - 2;
 
     let game = app.game().as_ref().unwrap();
 
@@ -110,7 +118,7 @@ pub fn draw_board(
         return Ok(());
     }
 
-    let center_y = y / 2 - ((TILE_HEIGHT as u16 * 8) as f32 / 2.0).ceil() as u16 - 2;
+    let center_y = y / 2 - ((tile_height as u16 * 8) as f32 / 2.0).ceil() as u16 - 2;
 
     // clear terminal and draw statusline
     execute!(
@@ -137,7 +145,7 @@ pub fn draw_board(
             stdout,
             cursor::MoveTo(
                 center - 3,
-                center_y + TILE_HEIGHT as u16 * i - TILE_HEIGHT as u16 / 2
+                center_y + tile_height as u16 * i - tile_height as u16 / 2
             ),
             Print(format!("{}", (9 - i).to_string().with(Color::DarkGrey))),
             cursor::MoveTo(center - 1, 0),
@@ -148,14 +156,14 @@ pub fn draw_board(
     execute!(
         stdout,
         cursor::MoveTo(center - 1, center_y),
-        Print(&format!("┬{}", H_LINE.repeat((TILE_WIDTH as usize + 1) - 1)).repeat(8)),
+        Print(&format!("┬{}", H_LINE.repeat((tile_width as usize + 1) - 1)).repeat(8)),
         Print("┬")
     )?;
 
     // print
-    for _ in 0..8 {
+    for i in 0..8 {
         // print tile's vertical lines
-        for _ in 0..TILE_HEIGHT {
+        for _ in 0..tile_height {
             execute!(
                 stdout,
                 cursor::MoveToNextLine(1),
@@ -165,28 +173,40 @@ pub fn draw_board(
         }
 
         // print horizontal line
-        execute!(
-            stdout,
-            cursor::MoveToColumn(center),
-            Print(
-                &format!(
-                    "{}{}",
-                    H_CORNER,
-                    H_LINE.repeat((TILE_WIDTH as usize + 1) - 1)
-                )
-                .repeat(8)
-            ),
-        )?;
+        if i != 7 {
+            execute!(
+                stdout,
+                cursor::MoveToColumn(center),
+                Print(
+                    &format!(
+                        "{}{}",
+                        H_CORNER,
+                        H_LINE.repeat((tile_width as usize + 1) - 1)
+                    )
+                    .repeat(8)
+                ),
+                Print(H_CORNER)
+            )?;
+        } else {
+            execute!(
+                stdout,
+                cursor::MoveToColumn(center),
+                Print(
+                    &format!("{}{}", "┴", H_LINE.repeat((tile_width as usize + 1) - 1)).repeat(8)
+                ),
+                Print("┴")
+            )?;
+        }
     }
 
     for (idx, c) in "abcdefgh".split("").enumerate() {
         execute!(
             stdout,
             cursor::MoveTo(
-                center + (TILE_WIDTH as u16 + 1) * idx as u16
-                    - (TILE_WIDTH as f32 / 2.0).ceil() as u16
+                center + (tile_width as u16 + 1) * idx as u16
+                    - (tile_width as f32 / 2.0).ceil() as u16
                     - 1,
-                center_y + TILE_HEIGHT as u16 * 8 + 1
+                center_y + tile_height as u16 * 8 + 1
             ),
             Print(format!("{}", c.with(Color::DarkGrey)))
         )?;
@@ -217,7 +237,7 @@ pub fn draw_board(
             stdout,
             cursor::MoveTo(
                 center,
-                center_y + (TILE_HEIGHT as u16 * (7 - i)) + 1 + extra_y
+                center_y + (tile_height as u16 * (7 - i)) + 1 + extra_y
             )
         )?;
 
@@ -238,8 +258,8 @@ pub fn draw_board(
                             Side::White => r.render_white().clone(),
                             Side::Black => r.render_black().clone(),
                         }
-                    } else if TILE_WIDTH > 4 {
-                        p.render(TILE_WIDTH).to_string()
+                    } else if tile_width > 4 {
+                        p.render(tile_width).to_string()
                     } else {
                         p.render_2c().to_string()
                     }
@@ -296,11 +316,11 @@ pub fn draw_board(
                 }
             }
 
-            let extra_x = (TILE_WIDTH as u16 - piece_string_raw.len() as u16) / 2;
+            let extra_x = (tile_width as u16 - piece_string_raw.len() as u16) / 2;
 
             execute!(
                 stdout,
-                cursor::MoveToColumn(center + 1 + (TILE_WIDTH as u16 + 1) * j as u16 + extra_x),
+                cursor::MoveToColumn(center + 1 + (tile_width as u16 + 1) * j as u16 + extra_x),
                 Print(piece_string),
             )?;
         }

@@ -29,6 +29,8 @@ pub struct Config {
     debug: bool,
     #[serde(default)]
     center_pieces: bool,
+    tile_width: Option<usize>,
+    tile_height: Option<usize>,
 }
 
 impl Config {
@@ -37,6 +39,14 @@ impl Config {
         let path = format!("{}/.config/chess.toml", home);
         let data = fs::read_to_string(path).unwrap();
         toml::from_str(&data)
+    }
+
+    pub fn tile_width(&self) -> &Option<usize> {
+        &self.tile_width
+    }
+
+    pub fn tile_height(&self) -> &Option<usize> {
+        &self.tile_height
     }
 
     pub fn center_pieces(&self) -> &bool {
