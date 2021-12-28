@@ -19,8 +19,8 @@
 - [x] Resize board dynamically as the terminal size changes
 - [x] Check for check
 - [x] Local game
+- [x] Pinning
 
-- [ ] Pinning
 - [ ] Premoves?
 - [ ] Make a local timer for showing players' clocks
 - [ ] Proper project name lol
