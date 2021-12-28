@@ -1,4 +1,4 @@
-use crate::chess::{utils::square_to_idx, CastleKind};
+use crate::chess::CastleKind;
 
 #[derive(Debug, Clone)]
 pub struct PlayedMove {
@@ -9,6 +9,16 @@ pub struct PlayedMove {
 impl PlayedMove {
     pub fn new(kind: PlayedMoveKind, uci: String) -> Self {
         Self { kind, uci }
+    }
+
+    pub fn reverse(&self) -> String {
+        let (src, mut dest) = self.uci.split_at(2);
+
+        if dest.len() > 2 {
+            dest = &dest[..dest.len() - 1];
+        }
+
+        vec![src, dest].join("")
     }
 }
 

@@ -33,34 +33,11 @@ impl Square for usize {
 }
 
 #[derive(Debug, Clone)]
-pub enum MoveConstraint {
-    MaxMoves(usize),
-    Castling,
-    PieceOnTargetSquare,
-}
-
-#[derive(Debug, Clone)]
 pub enum Edge {
     Left,
     Right,
     Top,
     Bottom,
-}
-
-pub struct Move<'a> {
-    pub x: isize,
-    pub y: isize,
-    pub constraints: &'a [MoveConstraint],
-}
-
-impl<'a> Move<'a> {
-    pub fn invert_coordinates(&self) -> Self {
-        Self {
-            x: -self.x,
-            y: -self.y,
-            constraints: self.constraints.clone(),
-        }
-    }
 }
 
 #[derive(Debug, Clone)]
