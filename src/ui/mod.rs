@@ -212,20 +212,6 @@ pub fn draw_board(
         )?;
     }
 
-    let moves_center_y = if board.moves().len() > size.1 as usize {
-        0
-    } else {
-        size.1 / 2 - board.moves().len() as u16 / 2
-    };
-
-    for (idx, mv) in board.moves().iter().enumerate() {
-        execute!(
-            stdout,
-            cursor::MoveTo((size.0 / 5) * 4, moves_center_y + idx as u16),
-            Print(mv),
-        )?;
-    }
-
     let extra_y = match app.config().center_pieces() {
         true => 1,
         false => 0,
@@ -308,8 +294,8 @@ pub fn draw_board(
                 }
             }
 
-            if let Some(uci) = board.moves().last() {
-                let (src, dest) = uci_to_idx(uci);
+            if let Some(mv) = board.played_moves().last() {
+                let (src, dest) = uci_to_idx(&mv.uci());
 
                 if src == idx {
                     piece_string += &format!("{}", "*".with(Color::Blue).bold());
@@ -418,9 +404,6 @@ pub async fn start(
         if let Ok(Event::Input(k)) = events.next() {
             app.state_changed = true;
             match k {
-                Key::Ctrl('s') => {
-                    app.seek_for_game().await;
-                }
                 Key::Char('q') => break,
                 Key::Char('h') | Key::Left => {
                     if cursor_pos.0 >= 1 {

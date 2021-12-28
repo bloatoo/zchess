@@ -29,3 +29,4 @@
 - [ ] Puzzles
 - [ ] Proper UI
 - [ ] Profile page (own profile + other players?)
+- [ ] Current game dashboard

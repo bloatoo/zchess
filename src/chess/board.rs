@@ -1,4 +1,4 @@
-use super::{Piece, PieceKind, Side};
+use super::{Piece, PieceKind, PlayedMove, PlayedMoveKind, Side};
 
 use crate::chess::utils::{idx_to_square, square_to_idx};
 
@@ -46,7 +46,7 @@ pub struct Board {
     en_passant: Option<usize>,
     turn: Side,
     current_generated_moves: Vec<usize>,
-    moves: Vec<String>,
+    played_moves: Vec<PlayedMove>,
 }
 
 impl Board {
@@ -105,17 +105,22 @@ impl Board {
             turn,
             en_passant: None,
             current_generated_moves: vec![],
-            moves: vec![],
+            played_moves: vec![],
         }
     }
 
     pub fn revert_move(&mut self) {
-        if let Some(mv) = self.moves.last() {
+        if let Some(mv) = self.played_moves.last() {
+            let mv = mv.uci().clone();
             let mv = mv.split_at(2);
             let mv_new = vec![mv.1, mv.0].join("");
             self.make_move_str_no_prev(&mv_new);
-            self.moves.pop();
+            self.played_moves.pop();
         }
+    }
+
+    pub fn played_moves(&self) -> &Vec<PlayedMove> {
+        &self.played_moves
     }
 
     pub fn generate_moves(&self, sq: usize, piece: &Piece) -> Vec<usize> {
@@ -209,10 +214,6 @@ impl Board {
         string
     }
 
-    pub fn moves(&self) -> &Vec<String> {
-        &self.moves
-    }
-
     pub async fn submit_move(
         &mut self,
         source: usize,
@@ -255,7 +256,7 @@ impl Board {
 
         let (src_str, dest_str) = (idx_to_square(source), idx_to_square(dest));
 
-        self.moves.push(format!("{}{}", src_str, dest_str));
+        let mv = PlayedMove::new(PlayedMoveKind::Normal, format!("{}{}", src_str, dest_str));
 
         if piece.kind() == &PieceKind::King {
             let idx = dest as isize - source as isize;
@@ -267,6 +268,8 @@ impl Board {
                 return;
             }
         }
+
+        self.played_moves.push(mv);
 
         self.set_piece(dest, Some(piece));
         self.set_piece(source, None);
@@ -279,8 +282,6 @@ impl Board {
 
         let (src_str, dest_str) = (idx_to_square(source), idx_to_square(dest));
 
-        self.moves.push(format!("{}{}", src_str, dest_str));
-
         if piece.kind() == &PieceKind::King {
             let idx = dest as isize - source as isize;
 
@@ -294,6 +295,9 @@ impl Board {
 
         self.set_piece(dest, Some(piece));
         self.set_piece(source, None);
+
+        let mv = PlayedMove::new(PlayedMoveKind::Normal, format!("{}{}", src_str, dest_str));
+        self.played_moves.push(mv);
 
         self.swap_turn();
     }

@@ -11,6 +11,14 @@ impl PlayedMove {
         Self { kind, uci }
     }
 
+    pub fn uci(&self) -> &String {
+        &self.uci
+    }
+
+    pub fn kind(&self) -> &PlayedMoveKind {
+        &self.kind
+    }
+
     pub fn reverse(&self) -> String {
         let (src, mut dest) = self.uci.split_at(2);
 
