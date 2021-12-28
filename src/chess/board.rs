@@ -158,12 +158,11 @@ impl Board {
         moves.retain(|m| m < &64);
 
         if piece.side() == &self.turn {
-            //if self.is_check(piece.side()) {
             let mut board = self.clone();
+
             for mv in moves.clone().iter() {
                 board.make_move(sq, *mv);
                 board.swap_turn();
-                debug(&format!("{}\n", &board.to_fen()));
 
                 if board.is_check(piece.side()) {
                     moves.retain(|m| m != mv);
@@ -172,7 +171,6 @@ impl Board {
                 board.swap_turn();
                 board.revert_move();
             }
-            //}
         }
 
         moves
