@@ -30,3 +30,5 @@
 - [ ] Proper UI
 - [ ] Profile page (own profile + other players?)
 - [ ] Current game dashboard
+- [ ] Update castling to new system
+- [ ] Pawn promotions
