@@ -56,3 +56,7 @@ pub fn uci_to_idx(uci: &str) -> (usize, usize) {
 
     (square_to_idx(&src), square_to_idx(&dest))
 }
+
+pub fn move_to_uci(src: usize, dest: usize) -> String {
+    format!("{}{}", idx_to_square(src), idx_to_square(dest))
+}

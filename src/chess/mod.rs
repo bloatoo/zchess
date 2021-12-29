@@ -10,6 +10,9 @@ pub mod utils;
 pub mod played_move;
 pub use played_move::{PlayedMove, PlayedMoveKind};
 
+pub const WHITE_KING_DEFAULT_POS: usize = 4;
+pub const BLACK_KING_DEFAULT_POS: usize = 60;
+
 pub struct Move<'a> {
     pub x: isize,
     pub y: isize,

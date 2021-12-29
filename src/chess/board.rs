@@ -1,4 +1,4 @@
-use super::{Piece, PieceKind, PlayedMove, PlayedMoveKind, Side};
+use super::{CastleKind, Piece, PieceKind, PlayedMove, PlayedMoveKind, Side};
 
 use crate::chess::utils::{idx_to_square, square_to_idx};
 
@@ -111,10 +111,12 @@ impl Board {
 
     pub fn revert_move(&mut self) {
         if let Some(mv) = self.played_moves.last() {
-            let mv = mv.uci().clone();
-            let mv = mv.split_at(2);
-            let mv_new = vec![mv.1, mv.0].join("");
-            self.make_move_str_no_prev(&mv_new);
+            for mv in mv.reverse() {
+                self.make_move_str_no_prev(&mv);
+            }
+
+            self.swap_turn();
+
             self.played_moves.pop();
         }
     }
@@ -167,10 +169,6 @@ impl Board {
             }
         }
 
-        if king.is_none() {
-            panic!("king not found, shouldn't happen")
-        }
-
         for (idx, piece) in self.pieces.iter().enumerate() {
             if let Some(p) = piece.as_ref() {
                 if p.kind() == &PieceKind::King {
@@ -197,7 +195,7 @@ impl Board {
         }
     }
 
-    pub fn to_fen(&self) -> String {
+    pub fn fen(&self) -> String {
         let mut string = String::new();
         self.pieces.iter().enumerate().for_each(|(idx, piece)| {
             if idx % 8 == 0 {
@@ -256,8 +254,6 @@ impl Board {
 
         let (src_str, dest_str) = (idx_to_square(source), idx_to_square(dest));
 
-        let mv = PlayedMove::new(PlayedMoveKind::Normal, format!("{}{}", src_str, dest_str));
-
         if piece.kind() == &PieceKind::King {
             let idx = dest as isize - source as isize;
 
@@ -268,6 +264,8 @@ impl Board {
                 return;
             }
         }
+
+        let mv = PlayedMove::new(PlayedMoveKind::Normal, format!("{}{}", src_str, dest_str));
 
         self.played_moves.push(mv);
 
@@ -280,26 +278,8 @@ impl Board {
     fn make_move_no_prev(&mut self, source: usize, dest: usize) {
         let piece = self.piece_at(source).clone().unwrap();
 
-        let (src_str, dest_str) = (idx_to_square(source), idx_to_square(dest));
-
-        if piece.kind() == &PieceKind::King {
-            let idx = dest as isize - source as isize;
-
-            if idx == 2 || idx == -2 {
-                let long = idx < 2;
-
-                self.castle(piece.side().clone(), long);
-                return;
-            }
-        }
-
         self.set_piece(dest, Some(piece));
         self.set_piece(source, None);
-
-        let mv = PlayedMove::new(PlayedMoveKind::Normal, format!("{}{}", src_str, dest_str));
-        self.played_moves.push(mv);
-
-        self.swap_turn();
     }
 
     pub fn castle(&mut self, side: Side, long: bool) {
@@ -339,10 +319,25 @@ impl Board {
         self.set_piece(dest_squares.1, Some(rook));
         self.set_piece(rook_idx, None);
 
-        self.turn = match self.turn {
-            Side::White => Side::Black,
-            Side::Black => Side::White,
+        let castle_kind = match (side, long) {
+            (Side::White, true) => CastleKind::WhiteLong,
+            (Side::White, false) => CastleKind::WhiteShort,
+            (Side::Black, true) => CastleKind::BlackLong,
+            (Side::Black, false) => CastleKind::BlackShort,
         };
+
+        let mv = PlayedMove::new(
+            PlayedMoveKind::Castle(castle_kind),
+            format!(
+                "{}{}",
+                idx_to_square(king_idx),
+                idx_to_square(dest_squares.0)
+            ),
+        );
+
+        self.played_moves.push(mv);
+
+        self.swap_turn();
     }
 
     fn set_piece(&mut self, dest: usize, piece: Option<Piece>) {

@@ -66,8 +66,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .bytes_stream();
 
         loop {
-            let ev = main_event_stream.next().await.unwrap().unwrap();
-            let ev_string = String::from_utf8(ev.to_vec()).unwrap();
+            let ev = main_event_stream.next().await;
+
+            if ev.is_none() {
+                break;
+            }
+
+            let ev_string = String::from_utf8(ev.unwrap().unwrap().to_vec()).unwrap();
 
             if ev_string.len() > 1 {
                 if debug_enabled {
