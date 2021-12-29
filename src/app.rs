@@ -112,6 +112,11 @@ impl App {
         self.game = Some(Game::local());
     }
 
+    pub fn end_game(&mut self) {
+        self.game = None;
+        self.ui_state = UIState::Menu;
+    }
+
     pub fn update_game_state(&mut self, state: GameState) {
         let moves: Vec<&str> = state.moves().split(" ").collect();
 

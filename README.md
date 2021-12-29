@@ -1,17 +1,19 @@
 # chess
 
-Chess (name subject to change) is a TUI program for playing chess, either locally, or via the Lichess API.
+A terminal interface for chess written in Rust. You can use it to play chess either locally, or against other players via the Lichess API.
 
 ### Installation
 Build from source:
 ```
-git clone https://github.com/landchad/chess
+git clone https://github.com/bloatoo/chess
 cd chess
 cargo install --path .
 ```
 
+Dependencies: `cargo` and `rustc`.
+
 ### Configuration
-A default configuration file has been provided in the GitHub repository. Move/copy that file to `~/.config/chess.toml` and configure it to your liking.
+An example configuration file has been provided in the GitHub repository. Move/copy that file to `~/.config/chess.toml` and configure it to your liking.
 
 ### Default Keybinds
 

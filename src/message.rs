@@ -7,4 +7,5 @@ pub enum Message {
     GameDataInit(Game),
     NewMessage(ChatMessage),
     GetOwnInfo(OwnInfo),
+    GameEnd,
 }

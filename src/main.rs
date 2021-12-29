@@ -88,7 +88,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         stream_tx.send(Message::GameStart(game_id.into())).unwrap();
                     }
 
-                    "gameEnd" => {}
+                    "gameEnd" => {
+                        stream_tx.send(Message::GameEnd).unwrap();
+                    }
                     _ => (),
                 }
             }
@@ -160,6 +162,9 @@ async fn event_loop(rx: Receiver<Message>, app: Arc<Mutex<App>>) {
             }
             Message::GetOwnInfo(info) => {
                 app.set_own_info(info);
+            }
+            Message::GameEnd => {
+                app.end_game();
             }
         }
     }
