@@ -20,6 +20,7 @@
 - [x] Check for check
 - [x] Local game
 - [x] Pinning
+- [x] Update castling to new system
 
 - [ ] Premoves?
 - [ ] Make a local timer for showing players' clocks
@@ -30,5 +31,4 @@
 - [ ] Proper UI
 - [ ] Profile page (own profile + other players?)
 - [ ] Current game dashboard
-- [ ] Update castling to new system
 - [ ] Pawn promotions
