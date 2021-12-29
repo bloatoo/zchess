@@ -1,6 +1,6 @@
 use reqwest::Client;
 use serde_json::Value;
-use zchess::{app::App, message::Message, ui, utils::debug};
+use zchess::{app::App, message::Message, ui, user::User, utils::debug};
 
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -117,10 +117,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let text = res.text().await;
 
             if let Ok(text) = text {
-                let info = serde_json::from_str(&text).unwrap();
+                let info: User = serde_json::from_str(&text).unwrap();
 
                 if debug_enabled {
-                    debug(&format!("own_info: {}", text));
+                    let debug_str = serde_json::to_string_pretty(&info);
+                    debug(&format!("own_info: {:#?}\n", debug_str));
                 }
 
                 own_info_tx.send(Message::GetOwnInfo(info)).unwrap();

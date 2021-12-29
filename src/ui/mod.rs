@@ -3,6 +3,7 @@ use crate::{
     chess::{utils::uci_to_idx, Side, Square},
     message::Message,
     ui::event::*,
+    user::User,
     utils::fmt_clock,
 };
 
@@ -27,6 +28,7 @@ pub mod event;
 
 pub enum UIState {
     Menu,
+    Profile(User),
     Seek,
     Game,
 }
@@ -42,6 +44,8 @@ pub fn draw_seek(stdout: &mut Stdout) -> Result<(), Box<dyn std::error::Error>> 
     execute!(stdout, cursor::MoveTo(center_x, center_y), Print(string))?;
     Ok(())
 }
+
+pub fn draw_profile(user: &User, cursor_pos: (u16, u16), stdout: &mut Stdout) {}
 
 pub fn draw_board(
     app: &App,
@@ -391,6 +395,10 @@ pub async fn start(
                 }
             }
 
+            UIState::Profile(user) => {
+                draw_profile(user, cursor_pos, &mut stdout);
+            }
+
             &UIState::Menu => {
                 draw_menu(&app, cursor_pos, &mut stdout)?;
             }
@@ -444,6 +452,7 @@ pub async fn start(
                         },
 
                         UIState::Seek => {}
+                        UIState::Profile(_) => {}
 
                         UIState::Game => {
                             let is_online = app.game().as_ref().unwrap().is_online();

@@ -4,39 +4,18 @@ use crate::{
     game::{ChatMessage, Game, GameData, GameState},
     message::Message,
     ui::UIState,
+    user::User,
     utils::debug,
 };
 
 use futures::stream::StreamExt;
-use serde::Deserialize;
 use serde_json::Value;
 use std::error::Error;
 use std::sync::mpsc::Sender;
 
-#[derive(Deserialize, Debug, Clone)]
-pub struct OwnInfo {
-    id: String,
-    username: String,
-    online: bool,
-}
-
-impl OwnInfo {
-    pub fn id(&self) -> &String {
-        &self.id
-    }
-
-    pub fn username(&self) -> &String {
-        &self.username
-    }
-
-    pub fn online(&self) -> &bool {
-        &self.online
-    }
-}
-
 pub struct App {
     game: Option<Game>,
-    own_info: Option<OwnInfo>,
+    own_info: Option<User>,
     config: Config,
     main_tx: Sender<Message>,
     ui_state: UIState,
@@ -57,7 +36,7 @@ impl App {
         })
     }
 
-    pub async fn get_own_info(&self) -> Result<OwnInfo, Box<dyn Error>> {
+    pub async fn get_own_info(&self) -> Result<User, Box<dyn Error>> {
         let client = reqwest::Client::new();
 
         let token = format!("Bearer {}", self.config.token());
@@ -220,11 +199,11 @@ impl App {
         self.ui_state = state;
     }
 
-    pub fn own_info(&self) -> &Option<OwnInfo> {
+    pub fn own_info(&self) -> &Option<User> {
         &self.own_info
     }
 
-    pub fn set_own_info(&mut self, info: OwnInfo) {
+    pub fn set_own_info(&mut self, info: User) {
         self.own_info = Some(info);
     }
 
