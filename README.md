@@ -11,7 +11,7 @@ cargo install --path .
 ```
 
 Dependencies: `cargo` and `rustc`. <br />
-The binary is installed in `~/.cargo/bin/zch`, make sure `~/.cargo/bin` is in PATH.
+The binary gets installed to `~/.cargo/bin/zch`, make sure `~/.cargo/bin` is in PATH.
 
 ### Configuration
 An example configuration file has been provided in the GitHub repository. Move/copy that file to `~/.config/zchess.toml` and configure it to your liking.
