@@ -1,6 +1,6 @@
-use chess::{app::App, message::Message, ui, utils::debug};
 use reqwest::Client;
 use serde_json::Value;
+use zchess::{app::App, message::Message, ui, utils::debug};
 
 use std::sync::Arc;
 use tokio::sync::Mutex;

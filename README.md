@@ -1,4 +1,4 @@
-# chess
+# zchess
 
 A terminal interface for chess written in Rust. You can use it to play chess either locally, or against other players via the Lichess API.
 
@@ -10,10 +10,11 @@ cd chess
 cargo install --path .
 ```
 
-Dependencies: `cargo` and `rustc`.
+Dependencies: `cargo` and `rustc`. <br />
+The binary is installed in `~/.cargo/bin/zch`, make sure `~/.cargo/bin` is in PATH.
 
 ### Configuration
-An example configuration file has been provided in the GitHub repository. Move/copy that file to `~/.config/chess.toml` and configure it to your liking.
+An example configuration file has been provided in the GitHub repository. Move/copy that file to `~/.config/zchess.toml` and configure it to your liking.
 
 ### Default Keybinds
 
