@@ -35,9 +35,9 @@ pub struct Config {
 
 impl Config {
     pub fn new() -> Result<Self, Error> {
-        let home = env::var("HOME").unwrap();
+        let home = env::var("HOME").expect("Failed getting $HOME.");
         let path = format!("{}/.config/zchess.toml", home);
-        let data = fs::read_to_string(path).unwrap();
+        let data = fs::read_to_string(path).expect("No configuration file found.");
         toml::from_str(&data)
     }
 

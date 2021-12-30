@@ -96,10 +96,10 @@ pub fn draw_board(
         let names = format!(
             "white: {} ({}) [{}] | black: {} ({}) [{}]",
             w_player.name(),
-            w_player.id(),
+            w_player.rating(),
             fmt_clock(wtime),
             b_player.name(),
-            b_player.id(),
+            b_player.rating(),
             fmt_clock(btime)
         );
 
