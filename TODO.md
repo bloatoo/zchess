@@ -33,3 +33,4 @@
 - [ ] Current game dashboard
 - [ ] Pawn promotions
 - [ ] Challenges
+- [ ] View board as the other player
