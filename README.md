@@ -39,4 +39,3 @@ enter | Select a menu item or a piece, or move the selected piece
 ### Preview
 
 ![Preview](media/preview.png?raw=true "Preview")
-<img align="right" src="media/preview.png">
