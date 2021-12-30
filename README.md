@@ -11,8 +11,8 @@
 #### Installation
 Building from source:
 ```
-git clone https://github.com/bloatoo/chess
-cd chess
+git clone https://github.com/bloatoo/zchess
+cd zchess
 cargo install --path .
 ```
 
