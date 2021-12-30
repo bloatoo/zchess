@@ -93,7 +93,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         stream_tx.send(Message::GameStart(game_id.into())).unwrap();
                     }
 
-                    "gameEnd" => {
+                    "gameFinish" => {
                         stream_tx.send(Message::GameEnd).unwrap();
                     }
                     _ => (),
@@ -120,8 +120,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let info: User = serde_json::from_str(&text).unwrap();
 
                 if debug_enabled {
-                    let debug_str = serde_json::to_string_pretty(&info);
-                    debug(&format!("own_info: {:#?}\n", debug_str));
+                    let debug_str = serde_json::to_string_pretty(&info).unwrap();
+                    debug(&format!("own_info: {}\n", debug_str));
                 }
 
                 own_info_tx.send(Message::GetOwnInfo(info)).unwrap();

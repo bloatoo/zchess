@@ -9,6 +9,25 @@ pub struct GameState {
     status: String,
 }
 
+impl GameState {
+    pub fn with_time(time: u64) -> Self {
+        Self {
+            moves: String::new(),
+            wtime: time,
+            btime: time,
+            status: String::new(),
+        }
+    }
+
+    pub fn set_wtime(&mut self, new_time: u64) {
+        self.wtime = new_time;
+    }
+
+    pub fn set_btime(&mut self, new_time: u64) {
+        self.btime = new_time;
+    }
+}
+
 #[derive(Deserialize, Debug, Clone, Default)]
 pub struct ChatMessage {
     username: String,
@@ -148,7 +167,7 @@ impl Game {
             move_count: Default::default(),
             data: Default::default(),
             messages: Default::default(),
-            state: Default::default(),
+            state: GameState::with_time(600000),
             kind: GameKind::Local,
         }
     }

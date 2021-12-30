@@ -26,6 +26,7 @@ const H_CORNER: &str = "┼";
 
 pub mod event;
 
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum UIState {
     Menu,
     Profile(User),
@@ -72,21 +73,34 @@ pub fn draw_board(
 
     let board = game.board();
 
+    let (wtime, btime) = match board.played_moves().len() >= 2 {
+        true => match board.turn() {
+            &Side::White => {
+                let wtime =
+                    *game.state().wtime() - board.turn_time_taken().elapsed().as_millis() as u64;
+                (wtime, *game.state().btime())
+            }
+            &Side::Black => {
+                let btime =
+                    *game.state().btime() - board.turn_time_taken().elapsed().as_millis() as u64;
+                (*game.state().wtime(), btime)
+            }
+        },
+        false => (*game.state().wtime(), *game.state().btime()),
+    };
+
     let statusline = if game.is_online() {
         let w_player = game.data().white();
         let b_player = game.data().black();
-
-        let wtime = game.state().wtime();
-        let btime = game.state().btime();
 
         let names = format!(
             "white: {} ({}) [{}] | black: {} ({}) [{}]",
             w_player.name(),
             w_player.id(),
-            fmt_clock(*wtime),
+            fmt_clock(wtime),
             b_player.name(),
             b_player.id(),
-            fmt_clock(*btime)
+            fmt_clock(btime)
         );
 
         let clock = game.data().clock();
@@ -99,14 +113,7 @@ pub fn draw_board(
             clock.increment() / 1000
         )
     } else {
-        let wtime = game.state().wtime();
-        let btime = game.state().btime();
-
-        format!(
-            "white: {} | black: {}",
-            fmt_clock(*wtime),
-            fmt_clock(*btime)
-        )
+        format!("white: {} | black: {}", fmt_clock(wtime), fmt_clock(btime))
     };
 
     let (x, y) = terminal::size().unwrap();
@@ -418,6 +425,15 @@ pub async fn start(
                         cursor_pos.0 -= 1;
                     }
                 }
+
+                Key::Char('a') if app.ui_state() == &UIState::Game => {
+                    app.abort_game().await;
+                }
+
+                Key::Char('r') if app.ui_state() == &UIState::Game => {
+                    app.resign_game().await;
+                }
+
                 Key::Char('j') | Key::Down => {
                     if cursor_pos.1 >= 1 {
                         cursor_pos.1 -= 1;
@@ -490,6 +506,10 @@ pub async fn start(
                                             .unwrap();
                                         piece.increment_moves();
 
+                                        let piece_side = piece.side().clone();
+                                        let turn_time_taken =
+                                            board.turn_time_taken().elapsed().as_millis();
+
                                         board
                                             .submit_move(idx, cursor_idx, id, token, is_online)
                                             .await;
@@ -500,6 +520,26 @@ pub async fn start(
 
                                         let game = app.game_mut().as_mut().unwrap();
                                         game.incr_move_count();
+                                        let mut new_state = game.state().clone();
+
+                                        let wtime = *game.state().wtime();
+                                        let btime = *game.state().btime();
+
+                                        if *game.move_count() >= 3 {
+                                            let (wtime, btime) = match piece_side {
+                                                Side::White => {
+                                                    (wtime - turn_time_taken as u64, btime)
+                                                }
+                                                Side::Black => {
+                                                    (wtime, btime - turn_time_taken as u64)
+                                                }
+                                            };
+
+                                            new_state.set_btime(btime);
+                                            new_state.set_wtime(wtime);
+
+                                            game.set_state(new_state);
+                                        }
                                     }
                                 }
                                 None => {

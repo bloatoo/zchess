@@ -57,6 +57,39 @@ impl App {
         Ok(serde_json::from_str(&res)?)
     }
 
+    pub async fn abort_game(&mut self) {
+        let token = format!("Bearer {}", self.config.token());
+        let client = reqwest::Client::new();
+
+        let id = self.game().as_ref().unwrap().id();
+
+        client
+            .post(&format!("https://lichess.org/api/game/{}/resign", id))
+            .header("Authorization", token)
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .send()
+            .await
+            .unwrap();
+
+        self.end_game();
+    }
+
+    pub async fn resign_game(&mut self) {
+        let token = format!("Bearer {}", self.config.token());
+        let client = reqwest::Client::new();
+
+        let id = self.game().as_ref().unwrap().id();
+
+        client
+            .post(&format!("https://lichess.org/api/game/{}/abort", id))
+            .header("Authorization", token)
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .send()
+            .await
+            .unwrap();
+        self.end_game();
+    }
+
     pub async fn seek_for_game(&mut self) {
         let token = format!("Bearer {}", self.config.token());
 
@@ -145,7 +178,10 @@ impl App {
                         debug(&format!("game_stream: {}", data));
                     }
 
-                    let json: Value = serde_json::from_str(&data).unwrap();
+                    let json: Value = serde_json::from_str(&data).unwrap_or_else(|e| {
+                        debug(&format!("error data: {}\n", data));
+                        panic!("data error: {}", e);
+                    });
 
                     match json["type"].as_str().unwrap() {
                         "gameFull" => {
