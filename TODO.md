@@ -22,9 +22,9 @@
 - [x] Pinning
 - [x] Update castling to new system
 - [x] Proper project name lol
+- [x] Make a local timer for showing players' clocks
 
 - [ ] Premoves?
-- [ ] Make a local timer for showing players' clocks
 - [ ] Options for seeking games (clock total time and increment, for example)
 - [ ] Send a new message to Lichess chat
 - [ ] Puzzles
