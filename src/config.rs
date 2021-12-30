@@ -36,7 +36,7 @@ pub struct Config {
 impl Config {
     pub fn new() -> Result<Self, Error> {
         let home = env::var("HOME").unwrap();
-        let path = format!("{}/.config/chess.toml", home);
+        let path = format!("{}/.config/zchess.toml", home);
         let data = fs::read_to_string(path).unwrap();
         toml::from_str(&data)
     }
