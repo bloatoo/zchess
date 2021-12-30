@@ -117,6 +117,10 @@ impl Board {
         &self.turn_time_taken
     }
 
+    pub fn reset_turn_timer(&mut self) {
+        self.turn_time_taken = Instant::now();
+    }
+
     pub fn revert_move(&mut self) {
         if let Some(mv) = self.played_moves.last() {
             for mv in mv.reverse() {
@@ -201,8 +205,6 @@ impl Board {
             Side::White => Side::Black,
             Side::Black => Side::White,
         };
-
-        self.turn_time_taken = Instant::now();
     }
 
     pub fn fen(&self) -> String {
@@ -232,32 +234,22 @@ impl Board {
     ) {
         self.make_move(source, dest);
         if online {
-            tokio::spawn(async move {
-                let (src, dest) = (idx_to_square(source), idx_to_square(dest));
+            let (src, dest) = (idx_to_square(source), idx_to_square(dest));
 
-                let client = reqwest::Client::new();
-                let url = format!(
-                    "https://lichess.org/api/board/game/{}/move/{}{}",
-                    game_id, src, dest
-                );
+            let client = reqwest::Client::new();
+            let url = format!(
+                "https://lichess.org/api/board/game/{}/move/{}{}",
+                game_id, src, dest
+            );
 
-                let token = format!("Bearer {}", token);
+            let token = format!("Bearer {}", token);
 
-                let res = client
-                    .post(url)
-                    .header("Authorization", token)
-                    .send()
-                    .await
-                    .unwrap()
-                    .text()
-                    .await
-                    .unwrap()
-                    .to_string();
-
-                if res.contains("error") {
-                    panic!("{}", res);
-                }
-            });
+            client
+                .post(url)
+                .header("Authorization", token)
+                .send()
+                .await
+                .unwrap();
         }
     }
 

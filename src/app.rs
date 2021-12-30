@@ -64,7 +64,7 @@ impl App {
         let id = self.game().as_ref().unwrap().id();
 
         client
-            .post(&format!("https://lichess.org/api/game/{}/resign", id))
+            .post(&format!("https://lichess.org/api/board/game/{}/resign", id))
             .header("Authorization", token)
             .header("Content-Type", "application/x-www-form-urlencoded")
             .send()
@@ -81,7 +81,7 @@ impl App {
         let id = self.game().as_ref().unwrap().id();
 
         client
-            .post(&format!("https://lichess.org/api/game/{}/abort", id))
+            .post(&format!("https://lichess.org/api/board/game/{}/abort", id))
             .header("Authorization", token)
             .header("Content-Type", "application/x-www-form-urlencoded")
             .send()
@@ -130,6 +130,10 @@ impl App {
     }
 
     pub fn update_game_state(&mut self, state: GameState) {
+        if state.status() == "aborted" {
+            return;
+        }
+
         let moves: Vec<&str> = state.moves().split(" ").collect();
 
         let game = self.game_mut().as_mut().unwrap();
@@ -143,6 +147,7 @@ impl App {
         std::mem::swap(game.board_mut(), &mut board);
 
         game.set_state(state);
+        game.board_mut().reset_turn_timer();
     }
 
     pub fn init_new_game<T: ToString>(&mut self, id: T) {

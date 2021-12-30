@@ -333,6 +333,7 @@ pub fn draw_menu(
     cursor_pos: (u16, u16),
     stdout: &mut Stdout,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    execute!(stdout, Clear(ClearType::All))?;
     let menu_items = vec!["New Lichess game", "Local game"];
 
     let size = terminal::size().unwrap();
@@ -520,6 +521,7 @@ pub async fn start(
 
                                         let game = app.game_mut().as_mut().unwrap();
                                         game.incr_move_count();
+
                                         let mut new_state = game.state().clone();
 
                                         let wtime = *game.state().wtime();
@@ -539,6 +541,10 @@ pub async fn start(
                                             new_state.set_wtime(wtime);
 
                                             game.set_state(new_state);
+                                        }
+
+                                        if !game.is_online() {
+                                            game.board_mut().reset_turn_timer();
                                         }
                                     }
                                 }

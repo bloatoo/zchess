@@ -169,6 +169,7 @@ async fn event_loop(rx: Receiver<Message>, app: Arc<Mutex<App>>) {
             Message::GetOwnInfo(info) => {
                 app.set_own_info(info);
             }
+
             Message::GameEnd => {
                 app.end_game();
             }
