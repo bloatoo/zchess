@@ -32,3 +32,4 @@
 - [ ] Profile page (own profile + other players?)
 - [ ] Current game dashboard
 - [ ] Pawn promotions
+- [ ] Challenges
