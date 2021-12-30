@@ -21,6 +21,8 @@ An example configuration file has been provided in the GitHub repository. Move/c
 ```
 q | Quit
 hjkl + arrow keys | Move the cursor during games
+a | Abort the current game
+r | Resign the current game
 enter | Select a menu item or a piece, or move the selected piece
 ```
 ### Preview
