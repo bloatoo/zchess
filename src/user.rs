@@ -48,8 +48,8 @@ impl Perfs {
 pub struct Perf {
     games: u32,
     rating: u32,
-    rd: u32,
-    prog: u32,
+    rd: i32,
+    prog: i32,
     prov: bool,
 }
 
@@ -62,11 +62,11 @@ impl Perf {
         &self.rating
     }
 
-    fn rd(&self) -> &u32 {
+    fn rd(&self) -> &i32 {
         &self.rd
     }
 
-    fn prog(&self) -> &u32 {
+    fn prog(&self) -> &i32 {
         &self.prog
     }
 

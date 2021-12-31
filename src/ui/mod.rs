@@ -55,18 +55,26 @@ pub fn draw_board(
     stdout: &mut Stdout,
     no_board: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let tile_width = match app.config().tile_width() {
+    let mut tile_width = match app.config().tile_width() {
         Some(w) => *w,
         None => 8,
     };
 
-    let tile_height = match app.config().tile_height() {
+    let mut tile_height = match app.config().tile_height() {
         Some(h) => *h,
         None => 4,
     };
 
     let tile_str = format!("│{}", " ".repeat(tile_width));
     let size = terminal::size()?;
+
+    while tile_width * 8 > size.0.into() {
+        tile_width -= 1;
+        if tile_height * 2 > tile_width {
+            tile_height -= 1;
+        }
+    }
+
     let center = size.0 / 2 - tile_width as u16 * 4 - 2;
 
     let game = app.game().as_ref().unwrap();
