@@ -340,11 +340,16 @@ pub fn draw_board(
 
 pub fn draw_menu(
     app: &App,
-    cursor_pos: (u16, u16),
+    cursor_pos: &mut (u16, u16),
     stdout: &mut Stdout,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    execute!(stdout, Clear(ClearType::All))?;
     let menu_items = vec!["New Lichess game", "Local game"];
+
+    if cursor_pos.1 > menu_items.len() as u16 {
+        cursor_pos.1 = 0;
+    }
+
+    execute!(stdout, Clear(ClearType::All))?;
 
     let size = terminal::size().unwrap();
 
@@ -354,7 +359,7 @@ pub fn draw_menu(
 
         let mut final_string: String = i.to_string();
 
-        if menu_items.len() as u16 - cursor_pos.1 == idx as u16 {
+        if cursor_pos.1 == idx as u16 {
             final_string = format!("{}", final_string.bold());
         }
 
@@ -418,7 +423,7 @@ pub async fn start(
             }
 
             &UIState::Menu => {
-                draw_menu(&app, cursor_pos, &mut stdout)?;
+                draw_menu(&app, &mut cursor_pos, &mut stdout)?;
             }
             UIState::Seek => {
                 draw_seek(&mut stdout)?;
@@ -431,7 +436,7 @@ pub async fn start(
             app.state_changed = true;
             match k {
                 Key::Char('q') => break,
-                Key::Char('h') | Key::Left => {
+                Key::Char('h') | Key::Left if app.ui_state() == &UIState::Game => {
                     if cursor_pos.0 >= 1 {
                         cursor_pos.0 -= 1;
                     }
@@ -445,17 +450,31 @@ pub async fn start(
                     app.resign_game().await;
                 }
 
-                Key::Char('j') | Key::Down => {
+                Key::Char('j') | Key::Down if app.ui_state() == &UIState::Game => {
                     if cursor_pos.1 >= 1 {
                         cursor_pos.1 -= 1;
                     }
                 }
-                Key::Char('k') | Key::Up => {
+
+                Key::Char('j') | Key::Down => {
+                    if cursor_pos.1 < 1 {
+                        cursor_pos.1 += 1;
+                    }
+                }
+
+                Key::Char('k') | Key::Up if app.ui_state() == &UIState::Game => {
                     if cursor_pos.1 < 7 {
                         cursor_pos.1 += 1;
                     }
                 }
-                Key::Char('l') | Key::Right => {
+
+                Key::Char('k') | Key::Up => {
+                    if cursor_pos.1 >= 1 {
+                        cursor_pos.1 -= 1;
+                    }
+                }
+
+                Key::Char('l') | Key::Right if app.ui_state() == &UIState::Game => {
                     if cursor_pos.0 < 7 {
                         cursor_pos.0 += 1;
                     }
