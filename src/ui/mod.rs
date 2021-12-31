@@ -55,25 +55,27 @@ pub fn draw_board(
     stdout: &mut Stdout,
     no_board: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let mut tile_width = match app.config().tile_width() {
-        Some(w) => *w,
-        None => 8,
-    };
+    let size = terminal::size()?;
+    let mut tile_width = 8;
+    let mut tile_height = 4;
 
-    let mut tile_height = match app.config().tile_height() {
-        Some(h) => *h,
-        None => 4,
-    };
+    while tile_width * 8 > size.0 as usize / 2 {
+        tile_width -= 1;
+    }
+
+    while tile_width * 8 < size.0 as usize - (size.0 as f32 / 1.5) as usize {
+        tile_width += 1;
+    }
+
+    while tile_height * 8 > size.1 as usize - size.1 as usize / 8 {
+        tile_height -= 1;
+    }
+
+    while tile_height * 8 < (size.1 as f32 * 0.7) as usize {
+        tile_height += 1;
+    }
 
     let tile_str = format!("│{}", " ".repeat(tile_width));
-    let size = terminal::size()?;
-
-    while tile_width * 8 > size.0.into() {
-        tile_width -= 1;
-        if tile_height * 2 > tile_width {
-            tile_height -= 1;
-        }
-    }
 
     let center = size.0 / 2 - tile_width as u16 * 4 - 2;
 
@@ -137,7 +139,7 @@ pub fn draw_board(
         return Ok(());
     }
 
-    let center_y = y / 2 - ((tile_height as u16 * 8) as f32 / 2.0).ceil() as u16 - 2;
+    let center_y = y / 2 - ((tile_height as u16 * 8) as f32 / 2.0).ceil() as u16;
 
     // clear terminal and draw statusline
     execute!(
@@ -232,7 +234,7 @@ pub fn draw_board(
     }
 
     let extra_y = match app.config().center_pieces() {
-        true => 1,
+        true => (tile_height as f32 / 2.0).floor() as u16 - 1,
         false => 0,
     };
 
@@ -263,7 +265,7 @@ pub fn draw_board(
                             Side::White => r.render_white().clone(),
                             Side::Black => r.render_black().clone(),
                         }
-                    } else if tile_width > 4 {
+                    } else if tile_width >= 6 {
                         p.render(tile_width).to_string()
                     } else {
                         p.render_2c().to_string()

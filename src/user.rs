@@ -2,13 +2,13 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct Profile {
-    country: String,
-    location: String,
-    bio: String,
+    country: Option<String>,
+    location: Option<String>,
+    bio: Option<String>,
     #[serde(rename = "firstName")]
-    first_name: String,
+    first_name: Option<String>,
     #[serde(rename = "lastName")]
-    last_name: String,
+    last_name: Option<String>,
 }
 
 impl Profile {}
