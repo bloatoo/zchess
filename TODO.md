@@ -23,6 +23,7 @@
 - [x] Update castling to new system
 - [x] Proper project name lol
 - [x] Make a local timer for showing players' clocks
+- [x] Pawn promotions
 
 - [ ] Premoves?
 - [ ] Options for seeking games (clock total time and increment, for example)
@@ -31,7 +32,6 @@
 - [ ] Proper UI
 - [ ] Profile page (own profile + other players?)
 - [ ] Current game dashboard
-- [ ] Pawn promotions
 - [ ] Challenges
 - [ ] View board as the other player
 - [ ] En passant rule
