@@ -121,7 +121,7 @@ impl App {
 
     pub fn local_game(&mut self) {
         self.ui_state = UIState::Game;
-        self.game = Some(Game::local());
+        self.game = Some(Game::local(600000, 5000));
     }
 
     pub fn end_game(&mut self) {

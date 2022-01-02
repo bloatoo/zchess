@@ -558,12 +558,16 @@ pub async fn start(
 
                                         if *game.move_count() >= 3 {
                                             let (wtime, btime) = match piece_side {
-                                                Side::White => {
-                                                    (wtime - turn_time_taken as u64, btime)
-                                                }
-                                                Side::Black => {
-                                                    (wtime, btime - turn_time_taken as u64)
-                                                }
+                                                Side::White => (
+                                                    wtime - turn_time_taken as u64
+                                                        + game.data().clock().increment(),
+                                                    btime,
+                                                ),
+                                                Side::Black => (
+                                                    wtime,
+                                                    btime - turn_time_taken as u64
+                                                        + game.data().clock().increment(),
+                                                ),
                                             };
 
                                             new_state.set_btime(btime);

@@ -50,7 +50,7 @@ pub struct Perf {
     rating: u32,
     rd: i32,
     prog: i32,
-    prov: bool,
+    prov: Option<bool>,
 }
 
 impl Perf {
@@ -70,7 +70,7 @@ impl Perf {
         &self.prog
     }
 
-    fn prov(&self) -> &bool {
+    fn prov(&self) -> &Option<bool> {
         &self.prov
     }
 }

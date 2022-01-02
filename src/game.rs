@@ -10,11 +10,11 @@ pub struct GameState {
 }
 
 impl GameState {
-    pub fn with_time(time: u64) -> Self {
+    pub fn with_time(initial: u64) -> Self {
         Self {
             moves: String::new(),
-            wtime: time,
-            btime: time,
+            wtime: initial,
+            btime: initial,
             status: String::new(),
         }
     }
@@ -76,6 +76,13 @@ pub struct GameData {
 }
 
 impl GameData {
+    pub fn with_clock(initial: u64, increment: u64) -> Self {
+        Self {
+            clock: Clock::new(initial, increment),
+            ..Default::default()
+        }
+    }
+
     pub fn clock(&self) -> &Clock {
         &self.clock
     }
@@ -100,6 +107,10 @@ pub struct Clock {
 }
 
 impl Clock {
+    pub fn new(initial: u64, increment: u64) -> Self {
+        Self { initial, increment }
+    }
+
     pub fn initial(&self) -> &u64 {
         &self.initial
     }
@@ -160,14 +171,14 @@ impl Game {
         }
     }
 
-    pub fn local() -> Self {
+    pub fn local(initial: u64, increment: u64) -> Self {
         Self {
             board: Default::default(),
             id: Default::default(),
             move_count: Default::default(),
-            data: Default::default(),
+            data: GameData::with_clock(initial, increment),
             messages: Default::default(),
-            state: GameState::with_time(600000),
+            state: GameState::with_time(initial),
             kind: GameKind::Local,
         }
     }
