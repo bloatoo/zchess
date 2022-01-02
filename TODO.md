@@ -34,3 +34,4 @@
 - [ ] Pawn promotions
 - [ ] Challenges
 - [ ] View board as the other player
+- [ ] En passant rule
