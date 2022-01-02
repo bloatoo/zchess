@@ -36,3 +36,4 @@
 - [ ] View board as the other player
 - [ ] En passant rule
 - [ ] Config option for auto-promotion to queen, UI for selecting which piece to promote a pawn to
+- [ ] Accept and offer draw
