@@ -1,7 +1,7 @@
 # zchess
 
 
-<img align="right" src="media/preview.png" height="150px" alt="logo">
+<img align="right" src="media/logo.png" height="150px" alt="logo">
 
 `zchess` is a terminal interface for chess written in Rust. You can use it to play chess either locally, or against other players via the Lichess API. <br> <br>
 NOTE: This project is an early state of development, so expect bugs. Feel free to open issues and pull requests.
