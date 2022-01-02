@@ -41,7 +41,9 @@ pub fn square_to_idx(square: &str) -> usize {
         "f" => 5,
         "g" => 6,
         "h" => 7,
-        _ => unreachable!(),
+        _ => {
+            panic!("invalid file, square: {}, {} {}", square, file, row);
+        }
     };
 
     (row.parse::<usize>().unwrap() - 1) * 8 + file

@@ -23,8 +23,15 @@ impl PlayedMove {
     pub fn reverse(&self) -> Vec<String> {
         use PlayedMoveKind::*;
         match &self.kind {
-            &Promotion | Normal => {
+            Normal => {
                 let (src, dest) = self.uci.split_at(2);
+
+                vec![vec![dest, src].join("")]
+            }
+
+            Promotion => {
+                let (src, mut dest) = self.uci.split_at(2);
+                dest = &dest[..dest.len() - 1];
 
                 vec![vec![dest, src].join("")]
             }
@@ -43,7 +50,7 @@ impl PlayedMove {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PlayedMoveKind {
     Castle(CastleKind),
     Promotion,

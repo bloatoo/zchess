@@ -36,7 +36,7 @@ pub enum MoveConstraint {
     PieceOnTargetSquare,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CastleKind {
     WhiteLong,
     WhiteShort,

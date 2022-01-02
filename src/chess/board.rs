@@ -64,11 +64,12 @@ impl Board {
         self.make_move(src, dest);
     }
 
-    fn make_move_str_no_prev(&mut self, mv: &str) {
+    // used for reverting played moves
+    fn make_move_str_raw(&mut self, mv: &str, promotion: bool) {
         let (src, dest) = mv.split_at(2);
         let (src, dest) = (square_to_idx(src), square_to_idx(dest));
 
-        self.make_move_no_prev(src, dest);
+        self.make_move_raw(src, dest, promotion);
     }
 
     pub fn from_str(fen: &str, turn: Side) -> Self {
@@ -123,8 +124,14 @@ impl Board {
 
     pub fn revert_move(&mut self) {
         if let Some(mv) = self.played_moves.last() {
+            if *mv.kind() == PlayedMoveKind::Promotion {
+                let rev_mv = mv.reverse().first().unwrap().clone();
+                self.make_move_str_raw(&rev_mv, true);
+                return;
+            }
+
             for mv in mv.reverse() {
-                self.make_move_str_no_prev(&mv);
+                self.make_move_str_raw(&mv, false);
             }
 
             self.swap_turn();
@@ -258,7 +265,7 @@ impl Board {
 
         let (src_str, dest_str) = (idx_to_square(source), idx_to_square(dest));
 
-        if piece.kind() == &PieceKind::King {
+        if piece.kind() == &PieceKind::King && *piece.move_count() == 0 {
             let idx = dest as isize - source as isize;
 
             if idx == 2 || idx == -2 {
@@ -267,6 +274,11 @@ impl Board {
                 self.castle(piece.side().clone(), long);
                 return;
             }
+        }
+
+        if *piece.kind() == PieceKind::Pawn && (dest.y() == 7 || dest.y() == 0) {
+            self.promote_piece(source, dest);
+            return;
         }
 
         let mv = PlayedMove::new(PlayedMoveKind::Normal, format!("{}{}", src_str, dest_str));
@@ -279,10 +291,16 @@ impl Board {
         self.swap_turn();
     }
 
-    fn make_move_no_prev(&mut self, source: usize, dest: usize) {
+    fn make_move_raw(&mut self, source: usize, dest: usize, promotion: bool) {
         let piece = self.piece_at(source).clone().unwrap();
 
-        self.set_piece(dest, Some(piece));
+        if promotion {
+            let new_piece = Piece::new(PieceKind::Pawn, piece.side().clone());
+            self.set_piece(dest, Some(new_piece));
+        } else {
+            self.set_piece(dest, Some(piece));
+        }
+
         self.set_piece(source, None);
     }
 
@@ -342,6 +360,27 @@ impl Board {
         self.played_moves.push(mv);
 
         self.swap_turn();
+    }
+
+    pub fn promote_piece(&mut self, source: usize, dest: usize) {
+        if let Some(p) = self.piece_at(source) {
+            if *p.kind() != PieceKind::Pawn {
+                return;
+            }
+
+            let new_piece = Piece::new(PieceKind::Queen, p.side().clone());
+
+            drop(p);
+
+            self.set_piece(dest, Some(new_piece));
+            self.set_piece(source, None);
+
+            let (src, dst) = (idx_to_square(source), idx_to_square(dest));
+            let mv = PlayedMove::new(PlayedMoveKind::Promotion, format!("{}{}q", src, dst));
+            self.played_moves.push(mv);
+
+            self.swap_turn();
+        }
     }
 
     fn set_piece(&mut self, dest: usize, piece: Option<Piece>) {
