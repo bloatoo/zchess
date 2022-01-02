@@ -1,10 +1,11 @@
 # zchess
 
-`zchess` is a terminal interface for chess written in Rust. You can use it to play chess either locally, or against other players via the Lichess API.
+`zchess` is a terminal interface for chess written in Rust. You can use it to play chess either locally, or against other players via the Lichess API. <br>
+NOTE: This project is an early state of development, so expect bugs. Feel free to open issues and pull requests.
 
 ### Features
-- A very flexible configuration system for configuring the interface
-- Real-time games against real opponents via Lichess
+- Flexible configuration system
+- 
 - Local games
 
 ### Getting started
@@ -16,8 +17,8 @@ cd zchess
 cargo install --path .
 ```
 
-You must have the Rust toolchain installed. For an easy way to get Rust installed, visit https://rustup.rs/. <br>
-The binary gets installed to `~/.cargo/bin/zch`, make sure `~/.cargo/bin` is in PATH.
+You must have the Rust toolchain installed. For an easy way to get Rust installed, visit [this link.](https://rustup.rs/.) <br>
+The binary gets installed to `~/.cargo/bin/zch`, so make sure `~/.cargo/bin` is in PATH.
 
 #### Requirements
 - A Lichess account and an API key. [Generate an API key here.](https://lichess.org/account/oauth/token)
