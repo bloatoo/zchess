@@ -24,6 +24,7 @@
 - [x] Proper project name lol
 - [x] Make a local timer for showing players' clocks
 - [x] Pawn promotions
+- [x] View board as the other player
 
 - [ ] Premoves?
 - [ ] Options for seeking games (clock total time and increment, for example)
@@ -33,7 +34,6 @@
 - [ ] Profile page (own profile + other players?)
 - [ ] Current game dashboard
 - [ ] Challenges
-- [ ] View board as the other player
 - [ ] En passant rule
 - [ ] Config option for auto-promotion to queen, UI for selecting which piece to promote a pawn to
 - [ ] Accept and offer draw
