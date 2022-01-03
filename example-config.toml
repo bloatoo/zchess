@@ -5,6 +5,10 @@ token = ""
 debug = false
 center_pieces = false
 
+# ui settings
+dark_square_color = "#2174ef"
+light_square_color = "#dadfe8"
+
 # piece rendering options
 # Pieces render as their full names by default, as shown in the preview image on the GitHub repository.
 [pieces]
