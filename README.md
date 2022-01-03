@@ -38,6 +38,7 @@ q | Quit
 hjkl + arrow keys | Move the cursor during games
 a | Abort the current game
 r | Resign the current game
+f | Flip board
 enter | Select a menu item or a piece, or move the selected piece
 ```
 ### Preview
