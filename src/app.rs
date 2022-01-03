@@ -20,6 +20,7 @@ pub struct App {
     main_tx: Sender<Message>,
     ui_state: UIState,
     pub state_changed: bool,
+    board_display_side: Side,
 }
 
 impl App {
@@ -33,6 +34,7 @@ impl App {
             state_changed: true,
             own_info: None,
             ui_state: UIState::Menu,
+            board_display_side: Side::White,
         })
     }
 
@@ -263,6 +265,18 @@ impl App {
     pub fn start_game(&mut self, game: Game) {
         self.game = Some(game);
         self.ui_state = UIState::Game;
+        self.board_display_side = self.check_own_side();
+    }
+
+    pub fn flip_board(&mut self) {
+        self.board_display_side = match self.board_display_side {
+            Side::White => Side::Black,
+            Side::Black => Side::White,
+        }
+    }
+
+    pub fn board_display_side(&self) -> &Side {
+        &self.board_display_side
     }
 }
 /*impl Default for App {

@@ -249,7 +249,7 @@ pub fn draw_board(
         )?;
 
         for j in 0..8 {
-            let idx = match app.check_own_side() {
+            let idx = match app.board_display_side() {
                 Side::White => i * 8 + j,
                 Side::Black => 63 - (i * 8 + j),
             } as usize;
@@ -474,6 +474,16 @@ pub async fn start(
                     }
                 }
 
+                Key::Char('f') if app.ui_state() == &UIState::Game => {
+                    app.flip_board();
+                    let new_cursor_idx = 63 - (cursor_pos.0 + cursor_pos.1 * 8);
+
+                    let new_y = (new_cursor_idx as f32 / 8.0).floor() as u16;
+                    let new_x = new_cursor_idx - new_y * 8;
+
+                    cursor_pos = (new_x, new_y);
+                }
+
                 Key::Char('l') | Key::Right if app.ui_state() == &UIState::Game => {
                     if cursor_pos.0 < 7 {
                         cursor_pos.0 += 1;
@@ -509,6 +519,8 @@ pub async fn start(
                                 Side::White
                             };
 
+                            let render_side = app.board_display_side().clone();
+
                             let id = app.game().as_ref().unwrap().id().to_string();
                             let token = app.config().token().to_string();
                             let board = app.game_mut().as_mut().unwrap().board_mut();
@@ -517,7 +529,7 @@ pub async fn start(
                                 Some(p) => {
                                     let idx = p.1 * 8 + p.0;
 
-                                    let cursor_idx = match side {
+                                    let cursor_idx = match render_side {
                                         Side::White => (cursor_pos.1 * 8 + cursor_pos.0) as usize,
                                         Side::Black => {
                                             63 - ((cursor_pos.1 * 8 + cursor_pos.0) as usize)
@@ -588,7 +600,7 @@ pub async fn start(
                                         }
                                     }
 
-                                    let idx = match side {
+                                    let idx = match render_side {
                                         Side::White => (cursor_pos.1 * 8 + cursor_pos.0) as usize,
                                         Side::Black => {
                                             63 - (cursor_pos.1 * 8 + cursor_pos.0) as usize
@@ -597,7 +609,7 @@ pub async fn start(
 
                                     if let Some(ref p) = board.piece_at(idx) {
                                         if p.side() == board.turn() {
-                                            selected_piece = match side {
+                                            selected_piece = match render_side {
                                                 Side::White => Some((
                                                     cursor_pos.0 as usize,
                                                     cursor_pos.1 as usize,
