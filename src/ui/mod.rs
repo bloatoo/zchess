@@ -103,27 +103,52 @@ pub fn draw_board(
         let w_player = game.data().white();
         let b_player = game.data().black();
 
-        let names = format!(
-            "white: {} ({}) [{}] | black: {} ({}) [{}]",
+        let mut white = format!(
+            "white: {} ({}) [{}] | ",
             w_player.name(),
             w_player.rating(),
             fmt_clock(wtime),
+        );
+
+        if *board.turn() == Side::White {
+            white = format!("{}", white.bold());
+        }
+
+        let mut black = format!(
+            "black: {} ({}) [{}]",
             b_player.name(),
             b_player.rating(),
             fmt_clock(btime)
         );
 
+        if *board.turn() == Side::Black {
+            black = format!("{}", black.bold());
+        }
+
         let clock = game.data().clock();
 
         format!(
-            "id: {} | {} | {}+{}",
+            "id: {} | {}{} | {}+{}",
             game.id(),
-            names,
+            white,
+            black,
             clock.initial() / 1000 / 60,
             clock.increment() / 1000
         )
     } else {
-        format!("white: {} | black: {}", fmt_clock(wtime), fmt_clock(btime))
+        let mut white = format!("white: {} | ", fmt_clock(wtime));
+
+        if *board.turn() == Side::White {
+            white = format!("{}", white.bold());
+        }
+
+        let mut black = format!("black: {}", fmt_clock(wtime));
+
+        if *board.turn() == Side::Black {
+            black = format!("{}", black.bold());
+        }
+
+        format!("{}{}", white, black)
     };
 
     let (x, y) = terminal::size().unwrap();
