@@ -8,7 +8,7 @@ use crate::{
     message::Message,
     ui::event::*,
     user::User,
-    utils::fmt_clock,
+    utils::{fmt_clock, hex_to_rgb},
 };
 
 use std::io::{Stdout, Write};
@@ -66,16 +66,26 @@ pub fn draw_board(
     let mut tile_width = 8;
     let mut tile_height = 4;
 
-    let dark_tile = Color::Rgb {
-        r: DARK_SQUARE_DEFAULT_RGB.0,
-        g: DARK_SQUARE_DEFAULT_RGB.1,
-        b: DARK_SQUARE_DEFAULT_RGB.2,
+    let dark_square_rgb = match hex_to_rgb(&app.config().dark_square_color()) {
+        Ok(value) => value,
+        Err(_) => DARK_SQUARE_DEFAULT_RGB,
     };
 
-    let light_tile = Color::Rgb {
-        r: LIGHT_SQUARE_DEFAULT_RGB.0,
-        g: LIGHT_SQUARE_DEFAULT_RGB.1,
-        b: LIGHT_SQUARE_DEFAULT_RGB.2,
+    let dark_square = Color::Rgb {
+        r: dark_square_rgb.0,
+        g: dark_square_rgb.1,
+        b: dark_square_rgb.2,
+    };
+
+    let light_square_rgb = match hex_to_rgb(app.config().light_square_color()) {
+        Ok(value) => value,
+        Err(_) => LIGHT_SQUARE_DEFAULT_RGB,
+    };
+
+    let light_square = Color::Rgb {
+        r: light_square_rgb.0,
+        g: light_square_rgb.1,
+        b: light_square_rgb.2,
     };
 
     while tile_width * 8 > size.0 as usize / 2 {
@@ -96,14 +106,14 @@ pub fn draw_board(
 
     let tile_str = format!(
         "{}{}",
-        " ".repeat(tile_width + 1).on(dark_tile),
-        " ".repeat(tile_width + 1).on(light_tile)
+        " ".repeat(tile_width + 1).on(dark_square),
+        " ".repeat(tile_width + 1).on(light_square)
     );
 
     let tile_str_alt = format!(
         "{}{}",
-        " ".repeat(tile_width + 1).on(light_tile),
-        " ".repeat(tile_width + 1).on(dark_tile)
+        " ".repeat(tile_width + 1).on(light_square),
+        " ".repeat(tile_width + 1).on(dark_square)
     );
 
     let center = size.0 / 2 - tile_width as u16 * 4 - 2;
@@ -382,8 +392,8 @@ pub fn draw_board(
             let extra_x = (tile_width as u16 - piece_string_raw.len() as u16) / 2;
 
             piece_string = match get_square_color(idx) {
-                SquareColor::Light => format!("{}", piece_string.on(light_tile)),
-                SquareColor::Dark => format!("{}", piece_string.on(dark_tile)),
+                SquareColor::Light => format!("{}", piece_string.on(light_square)),
+                SquareColor::Dark => format!("{}", piece_string.on(dark_square)),
             };
 
             execute!(

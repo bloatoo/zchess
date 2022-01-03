@@ -29,6 +29,10 @@ pub struct Config {
     debug: bool,
     #[serde(default)]
     center_pieces: bool,
+    #[serde(default)]
+    dark_square_color: String,
+    #[serde(default)]
+    light_square_color: String,
 }
 
 impl Config {
@@ -41,6 +45,14 @@ impl Config {
 
     pub fn center_pieces(&self) -> &bool {
         &self.center_pieces
+    }
+
+    pub fn light_square_color(&self) -> &String {
+        &self.light_square_color
+    }
+
+    pub fn dark_square_color(&self) -> &String {
+        &self.dark_square_color
     }
 
     pub fn pieces(&self) -> &HashMap<String, PieceRender> {
