@@ -35,6 +35,12 @@ impl Square for usize {
 }
 
 #[derive(Debug, Clone)]
+pub enum SquareColor {
+    Light,
+    Dark,
+}
+
+#[derive(Debug, Clone)]
 pub enum Edge {
     Left,
     Right,

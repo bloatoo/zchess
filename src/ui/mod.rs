@@ -1,6 +1,10 @@
 use crate::{
     app::App,
-    chess::{utils::uci_to_idx, Side, Square},
+    chess::{
+        board::SquareColor,
+        utils::{get_square_color, uci_to_idx},
+        Side, Square,
+    },
     message::Message,
     ui::event::*,
     user::User,
@@ -23,6 +27,9 @@ use crossterm::{
 
 const H_LINE: &str = "─";
 const H_CORNER: &str = "┼";
+
+const DARK_SQUARE_DEFAULT_RGB: (u8, u8, u8) = (0, 0, 0);
+const LIGHT_SQUARE_DEFAULT_RGB: (u8, u8, u8) = (255, 255, 255);
 
 pub mod event;
 
@@ -59,6 +66,18 @@ pub fn draw_board(
     let mut tile_width = 8;
     let mut tile_height = 4;
 
+    let dark_tile = Color::Rgb {
+        r: DARK_SQUARE_DEFAULT_RGB.0,
+        g: DARK_SQUARE_DEFAULT_RGB.1,
+        b: DARK_SQUARE_DEFAULT_RGB.2,
+    };
+
+    let light_tile = Color::Rgb {
+        r: LIGHT_SQUARE_DEFAULT_RGB.0,
+        g: LIGHT_SQUARE_DEFAULT_RGB.1,
+        b: LIGHT_SQUARE_DEFAULT_RGB.2,
+    };
+
     while tile_width * 8 > size.0 as usize / 2 {
         tile_width -= 1;
     }
@@ -75,7 +94,17 @@ pub fn draw_board(
         tile_height += 1;
     }
 
-    let tile_str = format!("│{}", " ".repeat(tile_width));
+    let tile_str = format!(
+        "{}{}",
+        " ".repeat(tile_width + 1).on(dark_tile),
+        " ".repeat(tile_width + 1).on(light_tile)
+    );
+
+    let tile_str_alt = format!(
+        "{}{}",
+        " ".repeat(tile_width + 1).on(light_tile),
+        " ".repeat(tile_width + 1).on(dark_tile)
+    );
 
     let center = size.0 / 2 - tile_width as u16 * 4 - 2;
 
@@ -198,28 +227,28 @@ pub fn draw_board(
         )?;
     }
 
-    // print first line
-    execute!(
-        stdout,
-        cursor::MoveTo(center - 1, center_y),
-        Print(&format!("┬{}", H_LINE.repeat((tile_width as usize + 1) - 1)).repeat(8)),
-        Print("┬")
-    )?;
+    // move cursor to center
+    execute!(stdout, cursor::MoveTo(center - 1, center_y))?;
 
     // print
     for i in 0..8 {
         // print tile's vertical lines
         for _ in 0..tile_height {
+            let current_row = match i % 2 {
+                0 => &tile_str_alt,
+                _ => &tile_str,
+            };
+
             execute!(
                 stdout,
                 cursor::MoveToNextLine(1),
                 cursor::MoveToColumn(center),
-                Print(&format!("{}", tile_str.repeat(9))),
+                Print(&format!("{}", current_row.repeat(4))),
             )?;
         }
 
         // print horizontal line
-        if i != 7 {
+        /*if i != 7 {
             execute!(
                 stdout,
                 cursor::MoveToColumn(center),
@@ -232,7 +261,7 @@ pub fn draw_board(
                     .repeat(8)
                 ),
                 Print(H_CORNER)
-            )?;
+            )?
         } else {
             execute!(
                 stdout,
@@ -242,7 +271,7 @@ pub fn draw_board(
                 ),
                 Print("┴")
             )?;
-        }
+        }*/
     }
 
     for (idx, c) in "abcdefgh".split("").enumerate() {
@@ -351,6 +380,11 @@ pub fn draw_board(
             }
 
             let extra_x = (tile_width as u16 - piece_string_raw.len() as u16) / 2;
+
+            piece_string = match get_square_color(idx) {
+                SquareColor::Light => format!("{}", piece_string.on(light_tile)),
+                SquareColor::Dark => format!("{}", piece_string.on(dark_tile)),
+            };
 
             execute!(
                 stdout,

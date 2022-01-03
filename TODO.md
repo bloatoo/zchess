@@ -12,7 +12,7 @@
 - [x] Menu UI
 - [x] Highlight previous move
 - [x] Documentation
-- [x] System to only allow redrawing the statusline instead of redrawing the whole board (bool passed to draw_board?)
+- [x] System to only allow redrawing the statusline instead of redrawing the whole board
 - [x] Optional debug info (written to a file)
 - [x] Read Lichess chat
 - [x] Time left for each player
