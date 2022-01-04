@@ -41,6 +41,7 @@ r | Resign the current game
 f | Flip board
 enter | Select a menu item or a piece, or move the selected piece
 ```
-### Preview
+### Showcase
 
-![Preview](media/preview.png?raw=true "Preview")
+#### Local game
+![Preview](media/preview-local-game.png?raw=true "An image of a local game played with zchess")
