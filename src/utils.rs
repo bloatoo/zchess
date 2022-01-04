@@ -49,3 +49,13 @@ pub fn hex_to_rgb<T: AsRef<str>>(hex: &T) -> Result<(u8, u8, u8), Box<dyn Error>
         u8::from_str_radix(blue, 16)?,
     ))
 }
+
+pub fn parse_config_hex(hex: &str, default: (u8, u8, u8)) -> (u8, u8, u8) {
+    match hex.is_empty() {
+        false => match hex_to_rgb(&hex) {
+            Ok(value) => value,
+            Err(_) => default,
+        },
+        true => default,
+    }
+}

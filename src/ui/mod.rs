@@ -8,7 +8,7 @@ use crate::{
     message::Message,
     ui::event::*,
     user::User,
-    utils::{fmt_clock, hex_to_rgb},
+    utils::{fmt_clock, parse_config_hex},
 };
 
 use std::io::{Stdout, Write};
@@ -25,11 +25,9 @@ use crossterm::{
     },
 };
 
-const H_LINE: &str = "─";
-const H_CORNER: &str = "┼";
-
 const DARK_SQUARE_DEFAULT_RGB: (u8, u8, u8) = (0, 0, 0);
 const LIGHT_SQUARE_DEFAULT_RGB: (u8, u8, u8) = (255, 255, 255);
+const LEGAL_MOVE_INDICATOR_DEFAULT_RGB: (u8, u8, u8) = (220, 200, 0);
 
 pub mod event;
 
@@ -66,10 +64,9 @@ pub fn draw_board(
     let mut tile_width = 8;
     let mut tile_height = 4;
 
-    let dark_square_rgb = match hex_to_rgb(&app.config().dark_square_color()) {
-        Ok(value) => value,
-        Err(_) => DARK_SQUARE_DEFAULT_RGB,
-    };
+    let dark_square_color = app.config().dark_square_color();
+
+    let dark_square_rgb = parse_config_hex(dark_square_color, DARK_SQUARE_DEFAULT_RGB);
 
     let dark_square = Color::Rgb {
         r: dark_square_rgb.0,
@@ -77,15 +74,25 @@ pub fn draw_board(
         b: dark_square_rgb.2,
     };
 
-    let light_square_rgb = match hex_to_rgb(app.config().light_square_color()) {
-        Ok(value) => value,
-        Err(_) => LIGHT_SQUARE_DEFAULT_RGB,
-    };
+    let light_square_color = app.config().light_square_color();
+
+    let light_square_rgb = parse_config_hex(&light_square_color, LIGHT_SQUARE_DEFAULT_RGB);
 
     let light_square = Color::Rgb {
         r: light_square_rgb.0,
         g: light_square_rgb.1,
         b: light_square_rgb.2,
+    };
+
+    let legal_move_indicator_color = app.config().legal_move_indicator_color();
+
+    let legal_move_indicator_rgb =
+        parse_config_hex(legal_move_indicator_color, LEGAL_MOVE_INDICATOR_DEFAULT_RGB);
+
+    let legal_move_indicator = Color::Rgb {
+        r: legal_move_indicator_rgb.0,
+        g: legal_move_indicator_rgb.1,
+        b: legal_move_indicator_rgb.2,
     };
 
     while tile_width * 8 > size.0 as usize / 2 {
@@ -190,7 +197,7 @@ pub fn draw_board(
         format!("{}{}", white, black)
     };
 
-    let (x, y) = terminal::size().unwrap();
+    let (_, y) = terminal::size().unwrap();
 
     if no_board {
         execute!(
@@ -213,8 +220,8 @@ pub fn draw_board(
         Print(statusline),
     )?;
 
-    // draw chat
-    for (idx, msg) in app.game().as_ref().unwrap().messages().iter().enumerate() {
+    // draw chat | deprecated, chat will be available on game dashboard
+    /*for (idx, msg) in app.game().as_ref().unwrap().messages().iter().enumerate() {
         let msg_string = format!("{}: {}", msg.username(), msg.text());
 
         execute!(
@@ -222,7 +229,7 @@ pub fn draw_board(
             cursor::MoveTo(x - x / 5, center_y + idx as u16),
             Print(msg_string)
         )?;
-    }
+    }*/
 
     // print rows
     for i in 1..=8 {
@@ -256,32 +263,6 @@ pub fn draw_board(
                 Print(&format!("{}", current_row.repeat(4))),
             )?;
         }
-
-        // print horizontal line
-        /*if i != 7 {
-            execute!(
-                stdout,
-                cursor::MoveToColumn(center),
-                Print(
-                    &format!(
-                        "{}{}",
-                        H_CORNER,
-                        H_LINE.repeat((tile_width as usize + 1) - 1)
-                    )
-                    .repeat(8)
-                ),
-                Print(H_CORNER)
-            )?
-        } else {
-            execute!(
-                stdout,
-                cursor::MoveToColumn(center),
-                Print(
-                    &format!("{}{}", "┴", H_LINE.repeat((tile_width as usize + 1) - 1)).repeat(8)
-                ),
-                Print("┴")
-            )?;
-        }*/
     }
 
     for (idx, c) in "abcdefgh".split("").enumerate() {
@@ -381,7 +362,7 @@ pub fn draw_board(
                 };
             } else if let Some(_) = selected_piece {
                 if board.current_generated_moves().contains(&idx) {
-                    piece_string = format!("{}", "*".with(Color::DarkGrey));
+                    piece_string = format!("{}", "*".with(legal_move_indicator));
                 }
             }
 

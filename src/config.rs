@@ -33,6 +33,8 @@ pub struct Config {
     dark_square_color: String,
     #[serde(default)]
     light_square_color: String,
+    #[serde(default)]
+    legal_move_indicator_color: String,
 }
 
 impl Config {
@@ -76,6 +78,10 @@ impl Config {
         };
 
         self.pieces.get(idx_str.into())
+    }
+
+    pub fn legal_move_indicator_color(&self) -> &String {
+        &self.legal_move_indicator_color
     }
 
     pub fn debug(&self) -> &bool {
