@@ -298,7 +298,8 @@ pub fn draw_board(
     }
 
     let extra_y = match app.config().center_pieces() {
-        true => (tile_height as f32 / 2.0).floor() as u16 - 1,
+        true if tile_height > 2 => (tile_height as f32 / 2.0).floor() as u16 - 1,
+        true => 0,
         false => 0,
     };
 
@@ -317,6 +318,11 @@ pub fn draw_board(
                 Side::White => i * 8 + j,
                 Side::Black => 63 - (i * 8 + j),
             } as usize;
+
+            let color = match get_square_color(idx) {
+                SquareColor::Light => light_square,
+                SquareColor::Dark => dark_square,
+            };
 
             let piece = board.piece_at(idx.into());
 
@@ -383,18 +389,15 @@ pub fn draw_board(
                 let (src, dest) = uci_to_idx(&mv.uci());
 
                 if src == idx {
-                    piece_string += &format!("{}", "*".with(Color::Blue).bold());
+                    piece_string += &format!("{}", "*".with(Color::Blue).bold().on(color));
                 } else if dest == idx {
-                    piece_string += &format!("{}", "*".with(Color::Yellow).bold());
+                    piece_string += &format!("{}", "*".with(Color::Yellow).bold().on(color));
                 }
             }
 
             let extra_x = (tile_width as u16 - piece_string_raw.len() as u16) / 2;
 
-            piece_string = match get_square_color(idx) {
-                SquareColor::Light => format!("{}", piece_string.on(light_square)),
-                SquareColor::Dark => format!("{}", piece_string.on(dark_square)),
-            };
+            piece_string = piece_string.on(color).to_string();
 
             execute!(
                 stdout,
