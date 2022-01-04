@@ -1,3 +1,4 @@
+use crossterm::style::Color;
 use std::error::Error;
 use std::fs::OpenOptions;
 use std::io::Write;
@@ -50,12 +51,14 @@ pub fn hex_to_rgb<T: AsRef<str>>(hex: &T) -> Result<(u8, u8, u8), Box<dyn Error>
     ))
 }
 
-pub fn parse_config_hex(hex: &str, default: (u8, u8, u8)) -> (u8, u8, u8) {
-    match hex.is_empty() {
+pub fn parse_config_hex(hex: &str, default: (u8, u8, u8)) -> Color {
+    let (r, g, b) = match hex.is_empty() {
         false => match hex_to_rgb(&hex) {
             Ok(value) => value,
             Err(_) => default,
         },
         true => default,
-    }
+    };
+
+    Color::Rgb { r, g, b }
 }

@@ -35,6 +35,10 @@ pub struct Config {
     light_square_color: String,
     #[serde(default)]
     legal_move_indicator_color: String,
+    #[serde(default)]
+    black_piece_color: String,
+    #[serde(default)]
+    white_piece_color: String,
 }
 
 impl Config {
@@ -49,6 +53,13 @@ impl Config {
         &self.center_pieces
     }
 
+    pub fn white_piece_color(&self) -> &String {
+        &self.white_piece_color
+    }
+
+    pub fn black_piece_color(&self) -> &String {
+        &self.black_piece_color
+    }
     pub fn light_square_color(&self) -> &String {
         &self.light_square_color
     }

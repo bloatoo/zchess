@@ -25,9 +25,12 @@ use crossterm::{
     },
 };
 
-const DARK_SQUARE_DEFAULT_RGB: (u8, u8, u8) = (0, 0, 0);
-const LIGHT_SQUARE_DEFAULT_RGB: (u8, u8, u8) = (255, 255, 255);
-const LEGAL_MOVE_INDICATOR_DEFAULT_RGB: (u8, u8, u8) = (220, 200, 0);
+const DARK_SQUARE_DEFAULT_COLOR: (u8, u8, u8) = (240, 217, 181);
+const LIGHT_SQUARE_DEFAULT_COLOR: (u8, u8, u8) = (181, 136, 99);
+const LEGAL_MOVE_INDICATOR_DEFAULT_COLOR: (u8, u8, u8) = (220, 200, 0);
+
+const WHITE_PIECE_DEFAULT_COLOR: (u8, u8, u8) = (0, 0, 0);
+const BLACK_PIECE_DEFAULT_COLOR: (u8, u8, u8) = (0, 0, 0);
 
 pub mod event;
 
@@ -61,54 +64,47 @@ pub fn draw_board(
     no_board: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let size = terminal::size()?;
+
+    let dark_square_color = app.config().dark_square_color();
+    let dark_square = parse_config_hex(dark_square_color, DARK_SQUARE_DEFAULT_COLOR);
+
+    let light_square_color = app.config().light_square_color();
+    let light_square = parse_config_hex(&light_square_color, LIGHT_SQUARE_DEFAULT_COLOR);
+
+    let legal_move_indicator_color = app.config().legal_move_indicator_color();
+    let legal_move_indicator = parse_config_hex(
+        legal_move_indicator_color,
+        LEGAL_MOVE_INDICATOR_DEFAULT_COLOR,
+    );
+
+    let black_piece_color = app.config().black_piece_color();
+    let black_piece = parse_config_hex(black_piece_color, BLACK_PIECE_DEFAULT_COLOR);
+
+    let white_piece_color = app.config().white_piece_color();
+    let white_piece = parse_config_hex(white_piece_color, WHITE_PIECE_DEFAULT_COLOR);
+
     let mut tile_width = 8;
     let mut tile_height = 4;
 
-    let dark_square_color = app.config().dark_square_color();
+    if !app.small_board() {
+        while tile_width * 8 > size.0 as usize / 2 {
+            tile_width -= 1;
+        }
 
-    let dark_square_rgb = parse_config_hex(dark_square_color, DARK_SQUARE_DEFAULT_RGB);
+        while tile_width * 8 < size.0 as usize - (size.0 as f32 / 1.5) as usize {
+            tile_width += 1;
+        }
 
-    let dark_square = Color::Rgb {
-        r: dark_square_rgb.0,
-        g: dark_square_rgb.1,
-        b: dark_square_rgb.2,
-    };
+        while tile_height * 8 > size.1 as usize - size.1 as usize / 8 {
+            tile_height -= 1;
+        }
 
-    let light_square_color = app.config().light_square_color();
-
-    let light_square_rgb = parse_config_hex(&light_square_color, LIGHT_SQUARE_DEFAULT_RGB);
-
-    let light_square = Color::Rgb {
-        r: light_square_rgb.0,
-        g: light_square_rgb.1,
-        b: light_square_rgb.2,
-    };
-
-    let legal_move_indicator_color = app.config().legal_move_indicator_color();
-
-    let legal_move_indicator_rgb =
-        parse_config_hex(legal_move_indicator_color, LEGAL_MOVE_INDICATOR_DEFAULT_RGB);
-
-    let legal_move_indicator = Color::Rgb {
-        r: legal_move_indicator_rgb.0,
-        g: legal_move_indicator_rgb.1,
-        b: legal_move_indicator_rgb.2,
-    };
-
-    while tile_width * 8 > size.0 as usize / 2 {
-        tile_width -= 1;
-    }
-
-    while tile_width * 8 < size.0 as usize - (size.0 as f32 / 1.5) as usize {
-        tile_width += 1;
-    }
-
-    while tile_height * 8 > size.1 as usize - size.1 as usize / 8 {
-        tile_height -= 1;
-    }
-
-    while tile_height * 8 < (size.1 as f32 * 0.7) as usize {
-        tile_height += 1;
+        while tile_height * 8 < (size.1 as f32 * 0.7) as usize {
+            tile_height += 1;
+        }
+    } else {
+        tile_width = 4;
+        tile_height = 2;
     }
 
     let tile_str = format!(
@@ -279,7 +275,7 @@ pub fn draw_board(
     }
 
     let extra_y = match app.config().center_pieces() {
-        true if tile_height > 2 => (tile_height as f32 / 2.0).floor() as u16 - 1,
+        true if tile_height > 1 => (tile_height as f32 / 2.0).floor() as u16,
         true => 0,
         false => 0,
     };
@@ -328,8 +324,13 @@ pub fn draw_board(
             let piece_string_raw = piece_string.clone();
 
             if let Some(ref p) = piece {
-                if p.side() == &app.check_own_side() {
-                    piece_string = format!("{}", piece_string.with(Color::Cyan));
+                piece_string = match p.side() {
+                    Side::White => {
+                        format!("{}", piece_string.with(white_piece))
+                    }
+                    Side::Black => {
+                        format!("{}", piece_string.with(black_piece))
+                    }
                 }
             }
 
@@ -376,7 +377,11 @@ pub fn draw_board(
                 }
             }
 
-            let extra_x = (tile_width as u16 - piece_string_raw.len() as u16) / 2;
+            let extra_x = if tile_width > 2 {
+                (tile_width as u16 - piece_string_raw.len() as u16) / 2 + 1
+            } else {
+                0
+            };
 
             piece_string = piece_string.on(color).to_string();
 
@@ -507,6 +512,10 @@ pub async fn start(
                     if cursor_pos.1 >= 1 {
                         cursor_pos.1 -= 1;
                     }
+                }
+
+                Key::Char('z') if app.ui_state() == &UIState::Game => {
+                    app.toggle_small_board();
                 }
 
                 Key::Char('j') | Key::Down => {

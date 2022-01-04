@@ -21,6 +21,7 @@ pub struct App {
     ui_state: UIState,
     pub state_changed: bool,
     board_display_side: Side,
+    small_board: bool,
 }
 
 impl App {
@@ -35,7 +36,16 @@ impl App {
             own_info: None,
             ui_state: UIState::Menu,
             board_display_side: Side::White,
+            small_board: false,
         })
+    }
+
+    pub fn toggle_small_board(&mut self) {
+        self.small_board = !self.small_board;
+    }
+
+    pub fn small_board(&self) -> &bool {
+        &self.small_board
     }
 
     pub async fn get_own_info(&self) -> Result<User, Box<dyn Error>> {
