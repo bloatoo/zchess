@@ -181,7 +181,7 @@ pub fn draw_board(
             white = format!("{}", white.bold());
         }
 
-        let mut black = format!("black: {}", fmt_clock(wtime));
+        let mut black = format!("black: {}", fmt_clock(btime));
 
         if *board.turn() == Side::Black {
             black = format!("{}", black.bold());
