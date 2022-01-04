@@ -46,6 +46,12 @@ impl Piece {
         self.move_count += 1;
     }
 
+    pub fn decrement_moves(&mut self) {
+        if self.move_count > 0 {
+            self.move_count -= 1;
+        }
+    }
+
     pub fn render(&self, tile_width: usize) -> &str {
         use PieceKind::*;
 

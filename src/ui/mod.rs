@@ -599,7 +599,6 @@ pub async fn start(
                                             .unwrap()
                                             .as_mut()
                                             .unwrap();
-                                        piece.increment_moves();
 
                                         let piece_side = piece.side().clone();
                                         let turn_time_taken =

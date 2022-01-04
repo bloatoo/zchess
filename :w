@@ -267,7 +267,7 @@ impl Board {
     }
 
     pub fn make_move(&mut self, source: usize, dest: usize) {
-        let mut piece = self.piece_at(source).clone().unwrap();
+        let piece = self.piece_at(source).clone().unwrap();
 
         let (src_str, dest_str) = (idx_to_square(source), idx_to_square(dest));
 
@@ -290,8 +290,6 @@ impl Board {
         let mv = PlayedMove::new(PlayedMoveKind::Normal, format!("{}{}", src_str, dest_str));
 
         self.played_moves.push(mv);
-
-        piece.increment_moves();
 
         self.set_piece(dest, Some(piece));
         self.set_piece(source, None);
@@ -341,11 +339,8 @@ impl Board {
             },
         };
 
-        let mut king = self.piece_at(king_idx).clone().unwrap();
-        let mut rook = self.piece_at(rook_idx).clone().unwrap();
-
-        king.increment_moves();
-        rook.increment_moves();
+        let king = self.piece_at(king_idx).clone().unwrap();
+        let rook = self.piece_at(rook_idx).clone().unwrap();
 
         self.set_piece(dest_squares.0, Some(king));
         self.set_piece(king_idx, None);
