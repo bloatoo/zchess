@@ -71,16 +71,24 @@ impl Piece {
         piece_str
     }
 
-    pub fn render_2c(&self) -> &str {
+    pub fn render_char(&self) -> String {
         use PieceKind::*;
-        match self.kind {
-            Pawn => "pw",
-            Rook => "rk",
-            Bishop => "bp",
-            Knight => "kn",
-            Queen => "qn",
-            King => "kg",
+
+        let mut name = match self.kind {
+            Pawn => "p",
+            Rook => "r",
+            Bishop => "b",
+            Knight => "n",
+            Queen => "q",
+            King => "k",
         }
+        .to_string();
+
+        if *self.side() == Side::White {
+            name = name.to_uppercase()
+        }
+
+        name
     }
 }
 

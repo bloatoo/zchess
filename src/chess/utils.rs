@@ -66,12 +66,13 @@ pub fn move_to_uci(src: usize, dest: usize) -> String {
 pub fn get_square_color(sq: usize) -> SquareColor {
     match sq.y() % 2 {
         0 => match sq % 2 {
-            0 => SquareColor::Dark,
-            _ => SquareColor::Light,
-        },
-        _ => match sq % 2 {
             0 => SquareColor::Light,
             _ => SquareColor::Dark,
+        },
+
+        _ => match sq % 2 {
+            0 => SquareColor::Dark,
+            _ => SquareColor::Light,
         },
     }
 }

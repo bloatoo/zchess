@@ -248,8 +248,8 @@ pub fn draw_board(
         // print tile's vertical lines
         for _ in 0..tile_height {
             let current_row = match i % 2 {
-                0 => &tile_str_alt,
-                _ => &tile_str,
+                0 => &tile_str,
+                _ => &tile_str_alt,
             };
 
             execute!(
@@ -267,7 +267,7 @@ pub fn draw_board(
             cursor::MoveTo(
                 center + (tile_width as u16 + 1) * idx as u16
                     - (tile_width as f32 / 2.0).ceil() as u16
-                    - 1,
+                    - 2,
                 center_y + tile_height as u16 * 8 + 1
             ),
             Print(format!("{}", c.with(Color::DarkGrey)))
@@ -275,7 +275,7 @@ pub fn draw_board(
     }
 
     let extra_y = match app.config().center_pieces() {
-        true if tile_height > 1 => (tile_height as f32 / 2.0).floor() as u16,
+        true if tile_height > 1 => (tile_height as f32 / 2.0).floor() as u16 + 1,
         true => 0,
         false => 0,
     };
@@ -284,10 +284,7 @@ pub fn draw_board(
     for i in (0..8).rev() {
         execute!(
             stdout,
-            cursor::MoveTo(
-                center,
-                center_y + (tile_height as u16 * (7 - i)) + 1 + extra_y
-            )
+            cursor::MoveTo(center, center_y + (tile_height as u16 * (7 - i)) + extra_y)
         )?;
 
         for j in 0..8 {
@@ -314,8 +311,10 @@ pub fn draw_board(
                         }
                     } else if tile_width >= 6 {
                         p.render(tile_width).to_string()
+                    } else if *app.small_board() {
+                        p.render_char()
                     } else {
-                        p.render_2c().to_string()
+                        p.render_char()
                     }
                 }
                 None => "".into(),
@@ -377,10 +376,10 @@ pub fn draw_board(
                 }
             }
 
-            let extra_x = if tile_width > 2 {
-                (tile_width as u16 - piece_string_raw.len() as u16) / 2 + 1
+            let extra_x = if tile_width > 4 {
+                (tile_width as u16 - piece_string_raw.len() as u16) / 2
             } else {
-                0
+                1
             };
 
             piece_string = piece_string.on(color).to_string();
