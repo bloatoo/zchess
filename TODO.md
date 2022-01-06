@@ -38,3 +38,4 @@
 - [ ] Config option for auto-promotion to queen, UI for selecting which piece to promote a pawn to
 - [ ] Accept and offer draw
 - [ ] Figure out the best way to render the board
+- [ ] Use different config options for piece rendering for big and small boards
